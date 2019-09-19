@@ -12,7 +12,7 @@ import ExpandBug from "./modules/expand-bug";
 import TreeStatus from "./modules/treestatus";
 //import Pun from './modules/pun';
 
-const HANDLERS = [ExpandBug /* HorseJS */, , TreeStatus /* Pun */];
+const HANDLERS = [ExpandBug, TreeStatus];
 
 let config = JSON.parse(fs.readFileSync("./config.json"));
 
