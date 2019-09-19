@@ -8,10 +8,11 @@ import {
 import * as fs from "fs";
 
 import ExpandBug from "./modules/expand-bug";
-import HorseJS from "./modules/horse";
-import TreeStatus from "./modules/treestatus.js";
+//import HorseJS from "./modules/horse";
+import TreeStatus from "./modules/treestatus";
+//import Pun from './modules/pun';
 
-const HANDLERS = [ExpandBug, HorseJS, TreeStatus];
+const HANDLERS = [ExpandBug /* HorseJS */, , TreeStatus /* Pun */];
 
 let config = JSON.parse(fs.readFileSync("./config.json"));
 

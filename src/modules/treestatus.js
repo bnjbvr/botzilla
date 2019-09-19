@@ -1,10 +1,8 @@
 import { promisify } from "util";
 import request from "request";
 
-let req = promisify(request);
-
+const req = promisify(request);
 const URL = "https://treestatus.mozilla-releng.net/trees2";
-
 const MATCH_REGEXP = /!tree ?([a-zA-Z-]+)?/g;
 
 export default async function onmessage(client, roomId, msg) {
