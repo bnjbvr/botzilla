@@ -17,4 +17,5 @@ Make sure that nodejs 10 or more is installed on your machine.
   your bot as documented there.
 - Run `npm run watch` so the transpiler continually watches changes to your
   code. Transpiled code ends up in `dist/index.js`.
+- (Optional) Make your code beautiful with `npm run pretty`.
 - Start the script with `node ./dist/index.js`.

@@ -96,54 +96,54 @@ function getTweet() {
 }
 
 async function onLoad() {
-    // Note all the known keywords.
-    for (var i = 0; i < KNOWN_FRAMEWORKS.length; i++) {
-        var fw = KNOWN_FRAMEWORKS[i];
-        KNOWN_KEYWORDS.push(fw + "js");
-        KNOWN_KEYWORDS.push(fw + ".js");
-    }
-    KNOWN_KEYWORDS = KNOWN_KEYWORDS.concat(KNOWN_FRAMEWORKS);
+  // Note all the known keywords.
+  for (var i = 0; i < KNOWN_FRAMEWORKS.length; i++) {
+    var fw = KNOWN_FRAMEWORKS[i];
+    KNOWN_KEYWORDS.push(fw + "js");
+    KNOWN_KEYWORDS.push(fw + ".js");
+  }
+  KNOWN_KEYWORDS = KNOWN_KEYWORDS.concat(KNOWN_FRAMEWORKS);
 
-    // Preload a few tweets.
-    var promises = [];
-    for (var i = 0; i < PRE_LOADED_TWEETS; i++) {
-        promises.push(getTweet());
-    }
-    let tweets = await Promise.all(promises);
-    for (let tweet of tweets) {
-        maybeCacheTweet(tweet);
-    }
-    console.log("preloaded", tweets.length, "tweets");
+  // Preload a few tweets.
+  var promises = [];
+  for (var i = 0; i < PRE_LOADED_TWEETS; i++) {
+    promises.push(getTweet());
+  }
+  let tweets = await Promise.all(promises);
+  for (let tweet of tweets) {
+    maybeCacheTweet(tweet);
+  }
+  console.log("preloaded", tweets.length, "tweets");
 }
 
 // TODO there should be a way to properly init a submodule. In the meanwhile,
 // just do it in the global scope here.
 (async function() {
-    try {
-        await onLoad();
-    } catch(err) {
-        console.error('when initializing horse.js:', err.message, err.stack);
-    }
-})()
+  try {
+    await onLoad();
+  } catch (err) {
+    console.error("when initializing horse.js:", err.message, err.stack);
+  }
+})();
 
 export default async function(client, roomId, msg) {
-    if (msg.indexOf('!horsejs') == -1) {
-        return;
-    }
+  if (msg.indexOf("!horsejs") == -1) {
+    return;
+  }
 
-    // Try to see if the message contained a known keyword.
-    for (var kw in KEYWORD_MAP) {
-        if (msg.toLowerCase().indexOf(kw) === -1) {
-            continue;
-        }
-        var tweets = KEYWORD_MAP[kw];
-        var index = (Math.random() * tweets.length) | 0;
-        client.sendText(roomId, tweets[index]);
-        tweets.splice(index, 1);
-        return;
+  // Try to see if the message contained a known keyword.
+  for (var kw in KEYWORD_MAP) {
+    if (msg.toLowerCase().indexOf(kw) === -1) {
+      continue;
     }
+    var tweets = KEYWORD_MAP[kw];
+    var index = (Math.random() * tweets.length) | 0;
+    client.sendText(roomId, tweets[index]);
+    tweets.splice(index, 1);
+    return;
+  }
 
-    // No it didn't, just send a random tweet.
-    let tweet = await getTweet();
-    client.sendText(roomId, tweet);
-};
+  // No it didn't, just send a random tweet.
+  let tweet = await getTweet();
+  client.sendText(roomId, tweet);
+}

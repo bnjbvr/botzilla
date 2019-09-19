@@ -1,21 +1,18 @@
 import {
-    MatrixClient,
-    SimpleFsStorageProvider,
-    AutojoinRoomsMixin,
-    RichReply,
+  MatrixClient,
+  SimpleFsStorageProvider,
+  AutojoinRoomsMixin,
+  RichReply
 } from "matrix-bot-sdk";
 
 import * as fs from "fs";
 
-import ExpandBug from './modules/expand-bug';
-import HorseJS from './modules/horse';
+import ExpandBug from "./modules/expand-bug";
+import HorseJS from "./modules/horse";
 
-const HANDLERS = [
-    ExpandBug,
-    HorseJS,
-];
+const HANDLERS = [ExpandBug, HorseJS];
 
-let config = JSON.parse(fs.readFileSync('./config.json'));
+let config = JSON.parse(fs.readFileSync("./config.json"));
 
 // where you would point a client to talk to a homeserver
 const homeserverUrl = config.homeserver;
@@ -40,36 +37,36 @@ client.start().then(() => console.log("Client started!"));
 
 // This is our event handler for dealing with the `!hello` command.
 async function handleCommand(roomId, event) {
-    console.log("Received event: ", JSON.stringify(event));
+  console.log("Received event: ", JSON.stringify(event));
 
-    // Don't handle events that don't have contents (they were probably redacted)
-    if (!event["content"]) {
-        return;
+  // Don't handle events that don't have contents (they were probably redacted)
+  if (!event["content"]) {
+    return;
+  }
+
+  // Don't handle non-text events
+  if (event["content"]["msgtype"] !== "m.text") {
+    return;
+  }
+
+  // We never send `m.text` messages so this isn't required, however this is
+  // how you would filter out events sent by the bot itself.
+  if (event["sender"] === (await client.getUserId())) {
+    return;
+  }
+
+  // Make sure that the event looks like a command we're expecting
+  const body = event["content"]["body"];
+
+  if (!body) {
+    return;
+  }
+
+  for (let handler of HANDLERS) {
+    try {
+      await handler(client, roomId, body);
+    } catch (err) {
+      console.error("Handler error: ", err);
     }
-
-    // Don't handle non-text events
-    if (event["content"]["msgtype"] !== "m.text") {
-        return;
-    }
-
-    // We never send `m.text` messages so this isn't required, however this is
-    // how you would filter out events sent by the bot itself.
-    if (event["sender"] === await client.getUserId()) {
-        return;
-    }
-
-    // Make sure that the event looks like a command we're expecting
-    const body = event["content"]["body"];
-
-    if (!body) {
-        return;
-    }
-
-    for (let handler of HANDLERS) {
-        try {
-            await handler(client, roomId, body);
-        } catch(err) {
-            console.error("Handler error: ", err);
-        }
-    }
+  }
 }
