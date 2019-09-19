@@ -9,8 +9,9 @@ import * as fs from "fs";
 
 import ExpandBug from "./modules/expand-bug";
 import HorseJS from "./modules/horse";
+import TreeStatus from "./modules/treestatus.js";
 
-const HANDLERS = [ExpandBug, HorseJS];
+const HANDLERS = [ExpandBug, HorseJS, TreeStatus];
 
 let config = JSON.parse(fs.readFileSync("./config.json"));
 
@@ -56,9 +57,14 @@ async function handleCommand(roomId, event) {
   }
 
   // Make sure that the event looks like a command we're expecting
-  const body = event["content"]["body"];
+  let body = event["content"]["body"];
 
   if (!body) {
+    return;
+  }
+
+  body = body.trim();
+  if (!body.length) {
     return;
   }
 
