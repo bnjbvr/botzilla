@@ -8,6 +8,12 @@ import {
 import * as fs from "fs";
 
 import ExpandBug from './modules/expand-bug';
+import HorseJS from './modules/horse';
+
+const HANDLERS = [
+    ExpandBug,
+    HorseJS,
+];
 
 let config = JSON.parse(fs.readFileSync('./config.json'));
 
@@ -31,10 +37,6 @@ client.on("room.message", handleCommand);
 // Now that the client is all set up and the event handler is registered, start the
 // client up. This will start it syncing.
 client.start().then(() => console.log("Client started!"));
-
-const HANDLERS = [
-    ExpandBug,
-];
 
 // This is our event handler for dealing with the `!hello` command.
 async function handleCommand(roomId, event) {
