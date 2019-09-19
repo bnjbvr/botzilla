@@ -1,4 +1,9 @@
-/target
-**/*.rs.bk
-credentials.toml
-Cargo.lock
+built.js
+config.json
+botzilla.json
+
+yarn.lock
+yarn-error.log
+
+node_modules/
+.cache/

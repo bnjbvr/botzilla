@@ -1,0 +1,28 @@
+{
+  "name": "botzilla",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "npx babel ./index.js -w -o built.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bnjbvr/botzilla.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bnjbvr/botzilla/issues"
+  },
+  "homepage": "https://github.com/bnjbvr/botzilla#readme",
+  "dependencies": {
+    "matrix-bot-sdk": "^0.3.9"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.6.0",
+    "@babel/core": "^7.6.0",
+    "@babel/preset-env": "^7.6.0"
+  }
+}

@@ -1,0 +1,4 @@
+{
+    "homeserver": "https://mozilla-test.modular.im",
+    "accessToken": "Your access token here. See https://t2bot.io/docs/access_tokens/ for details."
+}
