@@ -7,8 +7,8 @@ server.
 Hacking
 ===
 
-Currently, all the code is in `index.js`. This project uses the babeljs
-transpiler to write modern JS using ES modules.
+Currently, all the code is in `src/`. This project uses the babeljs transpiler
+to write modern JS using ES modules.
 
 Make sure that nodejs 10 or more is installed on your machine.
 
@@ -16,5 +16,5 @@ Make sure that nodejs 10 or more is installed on your machine.
 - Copy `config.json.example` to `config.json` and fill the access token for
   your bot as documented there.
 - Run `npm run watch` so the transpiler continually watches changes to your
-  code. Transpiled code ends up in `built.js`.
-- Start the script with `node ./built.js`.
+  code. Transpiled code ends up in `dist/index.js`.
+- Start the script with `node ./dist/index.js`.

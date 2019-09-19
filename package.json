@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "npx babel ./index.js -w -o built.js"
+    "watch": "npx babel ./src -w -d dist/"
   },
   "repository": {
     "type": "git",

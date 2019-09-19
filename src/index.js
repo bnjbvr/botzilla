@@ -7,6 +7,8 @@ import {
 
 import * as fs from "fs";
 
+import ExpandBug from './modules/expand-bug';
+
 let config = JSON.parse(fs.readFileSync('./config.json'));
 
 // where you would point a client to talk to a homeserver
@@ -30,20 +32,8 @@ client.on("room.message", handleCommand);
 // client up. This will start it syncing.
 client.start().then(() => console.log("Client started!"));
 
-const BUG_NUMBER_REGEXP = /bug (\d+)/g;
-
-async function expandBugNumber(client, roomId, msg) {
-    // Expands "bug 1507820" into "https://bugzilla.mozilla.org/show_bug.cgi?id=1507820".
-    var matches = null;
-    while ((matches = BUG_NUMBER_REGEXP.exec(msg)) !== null) {
-        let bugNumber = matches[1];
-        let msg = `https://bugzil.la/${bugNumber}`;
-        client.sendText(roomId, msg);
-    }
-}
-
 const HANDLERS = [
-    expandBugNumber,
+    ExpandBug,
 ];
 
 // This is our event handler for dealing with the `!hello` command.
