@@ -1,7 +1,15 @@
-let { requestJson } = require('../utils');
+let { requestJson } = require("../utils");
 
 const URL = "https://treestatus.mozilla-releng.net/trees2";
 const MATCH_REGEXP = /!tree ?([a-zA-Z-]+)?/g;
+
+function formatOne(treeInfo) {
+  let reason =
+    treeInfo.status !== "open" && treeInfo.reason && treeInfo.reason.length > 0
+      ? ` (${treeInfo.reason})`
+      : "";
+  return `${treeInfo.tree}: ${treeInfo.status}${reason}`;
+}
 
 module.exports = async function onmessage(client, roomId, msg) {
   MATCH_REGEXP.lastIndex = 0;
@@ -14,30 +22,30 @@ module.exports = async function onmessage(client, roomId, msg) {
   let whichTree = match[1]; // first group.
 
   let results = (await requestJson(URL)).result;
+  let treeMap = {};
   for (let result of results) {
-    if (whichTree) {
-      if (result.tree !== whichTree) {
-        continue;
-      }
-    } else {
-      switch (result.tree) {
-        case "autoland":
-        case "mozilla-inbound":
-        case "mozilla-central":
-        case "mozilla-beta":
-        case "mozilla-release":
-          break;
+    treeMap[result.tree] = result;
+  }
 
-        default:
-          continue;
-      }
+  if (whichTree) {
+    if (!treeMap[whichTree]) {
+      // Try mozilla- with the tree name, to allow inbound instead of
+      // mozilla-inbound.
+      whichTree = `mozilla-${whichTree}`;
     }
 
-    let reason =
-      result.status !== "open" && result.reason && result.reason.length > 0
-        ? ` (${result.reason})`
-        : "";
-    let msg = `${result.tree}: ${result.status}${reason}`;
+    let treeInfo = treeMap[whichTree];
+    if (!treeInfo) {
+      client.sendText(roomId, `unknown tree '${whichTree}'`);
+    } else {
+      client.sendText(roomId, formatOne(treeInfo));
+    }
+  } else {
+    // Respond with a few interesting trees.
+    let msg = ["autoland", "mozilla-inbound", "try"]
+      .map(name => treeMap[name])
+      .map(formatOne)
+      .join("\n");
     client.sendText(roomId, msg);
   }
 };
