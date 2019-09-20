@@ -2,11 +2,11 @@
   "name": "botzilla",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "npx babel ./src -w -d dist/",
-    "pretty": "npx prettier \"./src/**/*\" --write"
+    "pretty": "npx prettier \"./src/**/*\" --write",
+    "start": "node ./src/index"
   },
   "repository": {
     "type": "git",
@@ -23,9 +23,6 @@
     "request": "^2.88.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.6.0",
-    "@babel/core": "^7.6.0",
-    "@babel/preset-env": "^7.6.0",
     "prettier": "^1.18.2"
   }
 }

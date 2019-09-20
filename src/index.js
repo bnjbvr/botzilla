@@ -1,16 +1,16 @@
-import {
+let {
   MatrixClient,
   SimpleFsStorageProvider,
   AutojoinRoomsMixin,
   RichReply
-} from "matrix-bot-sdk";
+} = require("matrix-bot-sdk");
 
-import * as fs from "fs";
+let fs = require("fs");
 
-import ExpandBug from "./modules/expand-bug";
-import HorseJS from "./modules/horse";
-import TreeStatus from "./modules/treestatus";
-import Pun from "./modules/pun";
+let ExpandBug = require("./modules/expand-bug");
+let HorseJS = require("./modules/horse");
+let TreeStatus = require("./modules/treestatus");
+let Pun = require("./modules/pun");
 
 const HANDLER_NAMES = {
   "expand-bug": ExpandBug,

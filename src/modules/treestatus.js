@@ -1,11 +1,11 @@
-import { promisify } from "util";
-import request from "request";
+let { promisify } = require("util");
+let request = require("request");
 
 const req = promisify(request);
 const URL = "https://treestatus.mozilla-releng.net/trees2";
 const MATCH_REGEXP = /!tree ?([a-zA-Z-]+)?/g;
 
-export default async function onmessage(client, roomId, msg) {
+module.exports = async function onmessage(client, roomId, msg) {
   MATCH_REGEXP.lastIndex = 0;
 
   let match = MATCH_REGEXP.exec(msg);
@@ -43,7 +43,7 @@ export default async function onmessage(client, roomId, msg) {
     let msg = `${result.tree}: ${result.status}${reason}`;
     client.sendText(roomId, msg);
   }
-}
+};
 
 // Uncomment to test.
 //onmessage({ sendText: console.log.bind(console) }, 42, "!tree autoland");

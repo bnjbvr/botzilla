@@ -1,4 +1,4 @@
-import request from "request";
+let request = require("request");
 
 // This bot fetches quotes from the @horsejs twitter account, and reads them
 // out loud.
@@ -126,7 +126,7 @@ async function onLoad() {
   }
 })();
 
-export default async function(client, roomId, msg) {
+module.exports = async function(client, roomId, msg) {
   if (msg.indexOf("!horsejs") == -1) {
     return;
   }
@@ -146,4 +146,4 @@ export default async function(client, roomId, msg) {
   // No it didn't, just send a random tweet.
   let tweet = await getTweet();
   client.sendText(roomId, tweet);
-}
+};

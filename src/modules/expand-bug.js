@@ -10,4 +10,4 @@ async function expandBugNumber(client, roomId, msg) {
   }
 }
 
-export default expandBugNumber;
+module.exports = expandBugNumber;
