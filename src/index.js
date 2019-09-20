@@ -8,17 +8,31 @@ import {
 import * as fs from "fs";
 
 import ExpandBug from "./modules/expand-bug";
-//import HorseJS from "./modules/horse";
+import HorseJS from "./modules/horse";
 import TreeStatus from "./modules/treestatus";
-//import Pun from './modules/pun';
+import Pun from "./modules/pun";
 
-const HANDLERS = [ExpandBug, TreeStatus];
+const HANDLER_NAMES = {
+  "expand-bug": ExpandBug,
+  "horse-js": HorseJS,
+  "tree-status": TreeStatus,
+  pun: Pun
+};
 
 let config = JSON.parse(fs.readFileSync("./config.json"));
 
 // where you would point a client to talk to a homeserver
 const homeserverUrl = config.homeserver;
 const accessToken = config.accessToken;
+
+const HANDLERS = [];
+for (let handler of config.handlers) {
+  let candidate = HANDLER_NAMES[handler];
+  if (candidate) {
+    console.log("Found handler", handler);
+    HANDLERS.push(candidate);
+  }
+}
 
 // We'll want to make sure the bot doesn't have to do an initial sync every
 // time it restarts, so we need to prepare a storage provider. Here we use
