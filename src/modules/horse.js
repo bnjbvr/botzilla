@@ -1,4 +1,4 @@
-let request = require("request");
+let { requestJson } = require("../utils");
 
 // This bot fetches quotes from the @horsejs twitter account, and reads them
 // out loud.
@@ -41,6 +41,8 @@ var KNOWN_KEYWORDS = [
 
 var PRE_LOADED_TWEETS = 10;
 
+const URL = "http://javascript.horse/random.json";
+
 // Global values
 var TWEETS = [];
 
@@ -58,41 +60,20 @@ function maybeCacheTweet(tweet) {
   }
 }
 
-function getTweet() {
-  return new Promise(function(ok, nope) {
-    var resolved = false;
-    if (TWEETS.length) {
-      ok(TWEETS.pop());
-      resolved = true;
-    }
+async function getTweet() {
+  let result = null;
+  if (TWEETS.length) {
+    result = TWEETS.pop();
+  }
 
-    request(
-      {
-        uri: "http://javascript.horse/random.json"
-      },
-      function(err, resp, body) {
-        if (err) {
-          nope(err);
-          return;
-        }
-
-        var json;
-        try {
-          json = JSON.parse(body);
-        } catch (err) {
-          nope("Error when retrieving the json feed:" + err);
-        }
-
-        var tweet = json.text;
-        if (resolved) {
-          maybeCacheTweet(tweet);
-          TWEETS.push(tweet);
-        } else {
-          ok(tweet);
-        }
-      }
-    );
-  });
+  let tweet = (await requestJson(URL)).text;
+  if (result !== null) {
+    maybeCacheTweet(tweet);
+    TWEETS.push(tweet);
+  } else {
+    result = tweet;
+  }
+  return result;
 }
 
 async function onLoad() {

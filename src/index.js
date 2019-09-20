@@ -23,9 +23,11 @@ function loadConfig() {
   for (let handler of config.handlers) {
     let moduleFileName = HANDLER_NAMES[handler];
     if (moduleFileName) {
-      console.log("Loading handler", handler);
+      console.log("Loading handler:", handler);
       let module = require(`./modules/${moduleFileName}`);
       handlers.push(module);
+    } else {
+      console.warn("Unknown handler:", handler);
     }
   }
 

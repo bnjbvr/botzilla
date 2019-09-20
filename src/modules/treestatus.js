@@ -1,7 +1,5 @@
-let { promisify } = require("util");
-let request = require("request");
+let { requestJson } = require('../utils');
 
-const req = promisify(request);
 const URL = "https://treestatus.mozilla-releng.net/trees2";
 const MATCH_REGEXP = /!tree ?([a-zA-Z-]+)?/g;
 
@@ -15,8 +13,7 @@ module.exports = async function onmessage(client, roomId, msg) {
 
   let whichTree = match[1]; // first group.
 
-  let resp = await req(URL);
-  let results = JSON.parse(resp.body).result;
+  let results = (await requestJson(URL)).result;
   for (let result of results) {
     if (whichTree) {
       if (result.tree !== whichTree) {
