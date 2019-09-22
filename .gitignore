@@ -1,5 +1,5 @@
-config.json*
-botzilla.json
+*.json
+data/
 
 yarn.lock
 yarn-error.log
