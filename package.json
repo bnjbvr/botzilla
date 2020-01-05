@@ -21,7 +21,8 @@
   "dependencies": {
     "cheerio": "^1.0.0-rc.3",
     "matrix-bot-sdk": "^0.4.0",
-    "request": "^2.88.0"
+    "request": "^2.88.0",
+    "uuid": "^3.3.3"
   },
   "devDependencies": {
     "prettier": "^1.19.1"
