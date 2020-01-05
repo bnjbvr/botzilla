@@ -8,28 +8,18 @@ let {
 let fs = require("fs");
 let path = require("path");
 
-// Match handler names (as specified in the configuration handler key) to
-// scripts paths in ./modules/.
-const HANDLER_NAMES = {
-  "expand-bug": "expand-bug",
-  "horse-js": "horse",
-  "tree-status": "treestatus",
-  pun: "pun"
-};
-
 function loadConfig(fileName) {
   let config = JSON.parse(fs.readFileSync(fileName));
 
   const handlers = [];
-  for (let handler of config.handlers) {
-    let moduleFileName = HANDLER_NAMES[handler];
-    if (moduleFileName) {
-      console.log("Loading handler:", handler);
-      let module = require(`./modules/${moduleFileName}`);
-      handlers.push(module);
-    } else {
-      console.warn("Unknown handler:", handler);
+  for (let handlerName of config.handlers) {
+    let handler;
+    try {
+      handler = require(`./modules/${handlerName}`);
+    } catch (err) {
+      console.error("unknown handler:", handlerName);
     }
+    handlers.push(handler);
   }
 
   return {
