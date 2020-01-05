@@ -1,7 +1,7 @@
 let { requestJson } = require("../utils");
 
 const URL = "https://treestatus.mozilla-releng.net/trees2";
-const MATCH_REGEXP = /!tree ?([a-zA-Z-]+)?/g;
+const MATCH_REGEXP = /!treestatus ?([a-zA-Z-]+)?/g;
 
 function formatOne(treeInfo) {
   let reason =
