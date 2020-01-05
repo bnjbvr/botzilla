@@ -12,24 +12,42 @@ function loadConfig(fileName) {
   let config = JSON.parse(fs.readFileSync(fileName));
 
   const handlers = [];
-  for (let handlerName of config.handlers) {
-    let handler;
+  const handlerNames = [];
+  const helpMessages = {};
+
+  function addOneModule(handlerName) {
+    let mod;
     try {
-      handler = require(`./modules/${handlerName}`);
+      mod = require(`./modules/${handlerName}`);
     } catch (err) {
       console.error("unknown handler:", handlerName);
+      return;
     }
-    handlers.push(handler);
+    handlerNames.push(handlerName);
+    handlers.push(mod.handler);
+    helpMessages[handlerName] = mod.help || "No help for this module.";
+  }
+
+  for (let handlerName of config.handlers) {
+    addOneModule(handlerName);
+  }
+
+  if (!handlerNames.includes("help")) {
+    addOneModule("help");
   }
 
   return {
     homeserverUrl: config.homeserver,
     accessToken: config.accessToken,
-    handlers
+    handlers,
+    extra: {
+      handlerNames,
+      helpMessages
+    }
   };
 }
 
-function makeHandleCommand(client, handlers) {
+function makeHandleCommand(client, config) {
   return async function handleCommand(roomId, event) {
     console.log("Received event: ", JSON.stringify(event));
 
@@ -51,7 +69,6 @@ function makeHandleCommand(client, handlers) {
 
     // Make sure that the event looks like a command we're expecting
     let body = event["content"]["body"];
-
     if (!body) {
       return;
     }
@@ -61,9 +78,10 @@ function makeHandleCommand(client, handlers) {
       return;
     }
 
-    for (let handler of handlers) {
+    for (let handler of config.handlers) {
+      let extra = Object.assign({}, config.extra);
       try {
-        await handler(client, roomId, body);
+        await handler(client, roomId, body, extra);
       } catch (err) {
         console.error("Handler error: ", err);
       }
@@ -101,7 +119,7 @@ async function createClient(configFilename) {
 
   // We also want to make sure we can receive events - this is where we will
   // handle our command.
-  client.on("room.message", makeHandleCommand(client, config.handlers));
+  client.on("room.message", makeHandleCommand(client, config));
 
   // Now that the client is all set up and the event handler is registered, start the
   // client up. This will start it syncing.

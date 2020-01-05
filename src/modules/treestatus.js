@@ -11,7 +11,7 @@ function formatOne(treeInfo) {
   return `${treeInfo.tree}: ${treeInfo.status}${reason}`;
 }
 
-module.exports = async function onmessage(client, roomId, msg) {
+async function handler(client, roomId, msg) {
   MATCH_REGEXP.lastIndex = 0;
 
   let match = MATCH_REGEXP.exec(msg);
@@ -48,7 +48,11 @@ module.exports = async function onmessage(client, roomId, msg) {
       .join("\n");
     client.sendText(roomId, msg);
   }
-};
+}
 
-// Uncomment to test.
-//onmessage({ sendText: console.log.bind(console) }, 42, "!tree autoland");
+module.exports = {
+  handler,
+
+  help:
+    "Reads the status of all the trees with !treestatus, or of a single one with !treestatus NAME, if it's a well-known tree."
+};

@@ -1,7 +1,7 @@
-let { requestJson } = require("../utils");
-
 // This bot fetches quotes from the @horsejs twitter account, and reads them
-// out loud.
+// out loud. It's unsafe.
+
+let { requestJson } = require("../utils");
 
 // Constants.
 var KNOWN_FRAMEWORKS = [
@@ -107,24 +107,28 @@ async function onLoad() {
   }
 })();
 
-module.exports = async function(client, roomId, msg) {
-  if (msg.indexOf("!horsejs") == -1) {
-    return;
-  }
-
-  // Try to see if the message contained a known keyword.
-  for (var kw in KEYWORD_MAP) {
-    if (msg.toLowerCase().indexOf(kw) === -1) {
-      continue;
+module.exports = {
+  handler: async function(client, roomId, msg) {
+    if (msg.indexOf("!horsejs") == -1) {
+      return;
     }
-    var tweets = KEYWORD_MAP[kw];
-    var index = (Math.random() * tweets.length) | 0;
-    client.sendText(roomId, tweets[index]);
-    tweets.splice(index, 1);
-    return;
-  }
 
-  // No it didn't, just send a random tweet.
-  let tweet = await getTweet();
-  client.sendText(roomId, tweet);
+    // Try to see if the message contained a known keyword.
+    for (var kw in KEYWORD_MAP) {
+      if (msg.toLowerCase().indexOf(kw) === -1) {
+        continue;
+      }
+      var tweets = KEYWORD_MAP[kw];
+      var index = (Math.random() * tweets.length) | 0;
+      client.sendText(roomId, tweets[index]);
+      tweets.splice(index, 1);
+      return;
+    }
+
+    // No it didn't, just send a random tweet.
+    let tweet = await getTweet();
+    client.sendText(roomId, tweet);
+  },
+
+  help: "Tells a random message from the @horsejs twitter account. UNSAFE!"
 };

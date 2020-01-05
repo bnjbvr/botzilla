@@ -1,10 +1,12 @@
+// Expands "bug XXXXXX" into a short URL to the bug, the status, assignee and
+// title of the bug.
+
 let { request } = require("../utils");
 let cheerio = require("cheerio");
 
 const BUG_NUMBER_REGEXP = /bug (\d+)/g;
 
 async function expandBugNumber(client, roomId, msg) {
-  // Expands "bug 1507820" into the bug's title.
   var matches = null;
   while ((matches = BUG_NUMBER_REGEXP.exec(msg)) !== null) {
     let bugNumber = matches[1];
@@ -44,4 +46,9 @@ async function expandBugNumber(client, roomId, msg) {
   }
 }
 
-module.exports = expandBugNumber;
+module.exports = {
+  handler: expandBugNumber,
+
+  help:
+    "Expands bug numbers into (URL, status, assignee, title) when it sees 'bug 123456'."
+};
