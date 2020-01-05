@@ -15,6 +15,30 @@ Make sure that nodejs 10 or more is installed on your machine.
 - (Optional) Make your code beautiful with `npm run pretty`.
 - Start the script with `npm start`.
 
+Available modules
+===
+
+See the list in [./src/modules]. You can refer to a module by its filename in
+the modules directory.
+
+How to create a new module
+===
+
+- Create a new JS file in `./src/modules`.
+- It must export an object of the form:
+
+```js
+{
+    handler: async function(client, roomId, msg) {
+        client.sendText(roomId, "hello world!");
+    },
+    help: "An help message for this module."
+}
+```
+
+- The module's name is the file name, add it to your configuration.
+- Fun and profit.
+
 Deploy
 ===
 
