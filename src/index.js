@@ -76,7 +76,7 @@ async function createClient(configFilename) {
 
   const prefix = configFilename.replace(".json", "").replace("config-", "");
 
-  const storageDir = path.join(`./data/${prefix}`);
+  const storageDir = path.join("data", prefix);
   if (!fs.existsSync("./data")) {
     fs.mkdirSync("./data");
   }

@@ -19,10 +19,10 @@
   },
   "homepage": "https://github.com/bnjbvr/botzilla#readme",
   "dependencies": {
-    "matrix-bot-sdk": "^0.3.9",
+    "matrix-bot-sdk": "^0.4.0",
     "request": "^2.88.0"
   },
   "devDependencies": {
-    "prettier": "^1.18.2"
+    "prettier": "^1.19.1"
   }
 }
