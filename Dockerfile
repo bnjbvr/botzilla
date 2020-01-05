@@ -14,4 +14,4 @@ RUN npm install --production
 VOLUME /app/config.json
 VOLUME /app/data
 
-CMD ["npm", "start"]
+CMD ["node", "/app/src/index.js", "/config.json"]
