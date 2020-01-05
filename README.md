@@ -18,7 +18,7 @@ Make sure that nodejs 10 or more is installed on your machine.
 Available modules
 ===
 
-See the list in [./src/modules]. You can refer to a module by its filename in
+[See the list](./src/modules). You can refer to a module by its filename in
 the modules directory.
 
 How to create a new module
