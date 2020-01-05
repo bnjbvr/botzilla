@@ -48,11 +48,17 @@ function loadConfig(fileName) {
 }
 
 function makeHandleCommand(client, config) {
+  let startTime = Date.now();
   return async function handleCommand(roomId, event) {
     console.log("Received event: ", JSON.stringify(event));
 
     // Don't handle events that don't have contents (they were probably redacted)
     if (!event["content"]) {
+      return;
+    }
+
+    // Ignore messages published before we started.
+    if (parseInt(event["origin_server_ts"]) < startTime) {
       return;
     }
 
