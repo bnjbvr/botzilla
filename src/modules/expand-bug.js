@@ -4,44 +4,38 @@
 let { request } = require("../utils");
 let cheerio = require("cheerio");
 
-const BUG_NUMBER_REGEXP = /bug (\d+)/g;
+const BUG_NUMBER_REGEXP = /[Bb]ug (\d+)/g;
 
 async function expandBugNumber(client, roomId, msg) {
   var matches = null;
   while ((matches = BUG_NUMBER_REGEXP.exec(msg)) !== null) {
     let bugNumber = matches[1];
-    let url = `https://bugzilla.mozilla.org/show_bug.cgi?id=${bugNumber}`;
+
+    let url = `https://bugzilla.mozilla.org/rest/bug/${bugNumber}?include_fields=summary,assigned_to,status,resolution`;
 
     let response = await request(url);
-
-    if (!response || response.statusCode !== 200) {
+    if (!response) {
       continue;
     }
 
     let shortUrl = `https://bugzil.la/${bugNumber}`;
-
-    const $ = cheerio.load(response.body);
-
-    const title = $("head title").text();
-    if (!title.length) {
+    if (response.statusCode === 401) {
       // Probably a private bug! Just send the basic information.
       client.sendText(roomId, shortUrl);
       continue;
     }
 
-    let statusAndAssignee = $('head meta[property="og:description"]').attr(
-      "content"
-    );
+    if (response.statusCode !== 200) {
+      continue;
+    }
 
-    // It contains a string of the form "STATUS (assignee) in JavaScript: Core".
-    // Remove what's after the parenthesis (hacky :)).
-    statusAndAssignee = statusAndAssignee.substring(
-      0,
-      statusAndAssignee.indexOf(")") + 1
-    );
+    let json = JSON.parse(response.body);
+    if (!json.bugs || !json.bugs.length) {
+      continue;
+    }
 
-    let msg = `${shortUrl} — ${statusAndAssignee} — ${title}`;
-
+    let bug = json.bugs[0];
+    let msg = `${shortUrl} — ${bug.status} (${bug.assigned_to_detail.nick}) — ${bug.summary}`;
     client.sendText(roomId, msg);
   }
 }
