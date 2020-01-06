@@ -19,7 +19,6 @@
   },
   "homepage": "https://github.com/bnjbvr/botzilla#readme",
   "dependencies": {
-    "cheerio": "^1.0.0-rc.3",
     "matrix-bot-sdk": "^0.4.0",
     "request": "^2.88.0",
     "uuid": "^3.3.3"

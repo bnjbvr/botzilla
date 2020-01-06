@@ -2,7 +2,6 @@
 // title of the bug.
 
 let { request } = require("../utils");
-let cheerio = require("cheerio");
 
 const BUG_NUMBER_REGEXP = /[Bb]ug (\d+)/g;
 
