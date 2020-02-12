@@ -5,10 +5,26 @@ let { request } = require("../utils");
 
 const BUG_NUMBER_REGEXP = /[Bb]ug (\d+)/g;
 
+const COOLDOWN_TIME = 120000; // milliseconds
+
+// Map roomId to bug-number to timer.
+const cooldown = new Map();
+
 async function expandBugNumber(client, roomId, msg) {
   var matches = null;
   while ((matches = BUG_NUMBER_REGEXP.exec(msg)) !== null) {
     let bugNumber = matches[1];
+
+    let roomCooldown = cooldown.get(roomId);
+    if (typeof roomCooldown !== "undefined") {
+      if (typeof roomCooldown.get(bugNumber) !== "undefined") {
+        // Skip to avoid spamming the room.
+        continue;
+      }
+    } else {
+      roomCooldown = new Map();
+      cooldown.set(roomId, roomCooldown);
+    }
 
     let url = `https://bugzilla.mozilla.org/rest/bug/${bugNumber}?include_fields=summary,assigned_to,status,resolution`;
 
@@ -36,6 +52,12 @@ async function expandBugNumber(client, roomId, msg) {
     let bug = json.bugs[0];
     let msg = `${shortUrl} — ${bug.status} (${bug.assigned_to_detail.nick}) — ${bug.summary}`;
     client.sendText(roomId, msg);
+
+    let timerId = setTimeout(() => {
+      roomCooldown.delete(bugNumber);
+    }, COOLDOWN_TIME);
+
+    roomCooldown.set(bugNumber, timerId);
   }
 }
 
