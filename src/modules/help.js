@@ -33,6 +33,12 @@ module.exports = {
       html += `<p>${notice}</p>`;
     }
 
+    if (typeof extra.owner !== "undefined") {
+      let notice = `The owner of this bot is ${extra.owner}. In case the bot misbehaves in any ways, feel free to get in touch with its owner.`;
+      html += `<p>${notice}</p>`;
+      text += `\n${notice}`;
+    }
+
     client.sendMessage(roomId, {
       msgtype: "m.notice",
       body: text,

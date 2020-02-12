@@ -4,5 +4,6 @@
     "handlers": [
         "expand-bug",
         "tree-status"
-    ]
+    ],
+    "owner": "@somebody:matrix.example.com"
 }

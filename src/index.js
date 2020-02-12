@@ -42,7 +42,8 @@ function loadConfig(fileName) {
     handlers,
     extra: {
       handlerNames,
-      helpMessages
+      helpMessages,
+      owner: config.owner
     }
   };
 }
