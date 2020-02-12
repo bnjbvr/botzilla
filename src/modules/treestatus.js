@@ -11,10 +11,10 @@ function formatOne(treeInfo) {
   return `${treeInfo.tree}: ${treeInfo.status}${reason}`;
 }
 
-async function handler(client, roomId, msg) {
+async function handler(client, msg) {
   MATCH_REGEXP.lastIndex = 0;
 
-  let match = MATCH_REGEXP.exec(msg);
+  let match = MATCH_REGEXP.exec(msg.body);
   if (match === null) {
     return;
   }
@@ -36,17 +36,17 @@ async function handler(client, roomId, msg) {
 
     let treeInfo = treeMap[whichTree];
     if (!treeInfo) {
-      client.sendText(roomId, `unknown tree '${whichTree}'`);
+      client.sendText(msg.room, `unknown tree '${whichTree}'`);
     } else {
-      client.sendText(roomId, formatOne(treeInfo));
+      client.sendText(msg.room, formatOne(treeInfo));
     }
   } else {
     // Respond with a few interesting trees.
-    let msg = ["autoland", "mozilla-inbound", "try"]
+    let answer = ["autoland", "mozilla-inbound", "try"]
       .map(name => treeMap[name])
       .map(formatOne)
       .join("\n");
-    client.sendText(roomId, msg);
+    client.sendText(msg.room, answer);
   }
 }
 

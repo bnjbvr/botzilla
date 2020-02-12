@@ -108,26 +108,26 @@ async function onLoad() {
 })();
 
 module.exports = {
-  handler: async function(client, roomId, msg) {
-    if (msg.indexOf("!horsejs") == -1) {
+  handler: async function(client, msg) {
+    if (msg.body.indexOf("!horsejs") == -1) {
       return;
     }
 
     // Try to see if the message contained a known keyword.
     for (var kw in KEYWORD_MAP) {
-      if (msg.toLowerCase().indexOf(kw) === -1) {
+      if (msg.body.toLowerCase().indexOf(kw) === -1) {
         continue;
       }
       var tweets = KEYWORD_MAP[kw];
       var index = (Math.random() * tweets.length) | 0;
-      client.sendText(roomId, tweets[index]);
+      client.sendText(msg.room, tweets[index]);
       tweets.splice(index, 1);
       return;
     }
 
     // No it didn't, just send a random tweet.
     let tweet = await getTweet();
-    client.sendText(roomId, tweet);
+    client.sendText(msg.room, tweet);
   },
 
   help: "Tells a random message from the @horsejs twitter account. UNSAFE!"

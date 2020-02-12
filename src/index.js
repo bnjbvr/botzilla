@@ -50,7 +50,7 @@ function loadConfig(fileName) {
 
 function makeHandleCommand(client, config) {
   let startTime = Date.now();
-  return async function handleCommand(roomId, event) {
+  return async function handleCommand(room, event) {
     console.log("Received event: ", JSON.stringify(event));
 
     // Don't handle events that don't have contents (they were probably redacted)
@@ -68,9 +68,9 @@ function makeHandleCommand(client, config) {
       return;
     }
 
-    // We never send `m.text` messages so this isn't required, however this is
-    // how you would filter out events sent by the bot itself.
-    if (event["sender"] === (await client.getUserId())) {
+    // Filter out events sent by the bot itself.
+    let sender = event["sender"];
+    if (sender === (await client.getUserId())) {
       return;
     }
 
@@ -85,10 +85,16 @@ function makeHandleCommand(client, config) {
       return;
     }
 
+    let msg = {
+      body,
+      sender,
+      room
+    };
+
     for (let handler of config.handlers) {
       let extra = Object.assign({}, config.extra);
       try {
-        await handler(client, roomId, body, extra);
+        await handler(client, msg, extra);
       } catch (err) {
         console.error("Handler error: ", err);
       }

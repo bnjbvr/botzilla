@@ -60,14 +60,14 @@ async function handleBug(client, roomId, bugNumber, includeUrl) {
   roomCooldown.set(bugNumber, timerId);
 }
 
-async function expandBugNumber(client, roomId, msg) {
+async function expandBugNumber(client, msg) {
   var matches = null;
-  while ((matches = BUG_NUMBER_REGEXP.exec(msg)) !== null) {
-    await handleBug(client, roomId, matches[1], true);
+  while ((matches = BUG_NUMBER_REGEXP.exec(msg.body)) !== null) {
+    await handleBug(client, msg.room, matches[1], true);
   }
   matches = null;
-  while ((matches = BUG_URL_REGEXP.exec(msg)) !== null) {
-    await handleBug(client, roomId, matches[1], false);
+  while ((matches = BUG_URL_REGEXP.exec(msg.body)) !== null) {
+    await handleBug(client, msg.room, matches[1], false);
   }
 }
 

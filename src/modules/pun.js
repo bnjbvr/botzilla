@@ -7,12 +7,12 @@ let { requestJson } = require("../utils");
 const URL = "https://icanhazdadjoke.com/";
 
 module.exports = {
-  handler: async function pun(client, roomId, msg) {
-    if (msg.indexOf("!pun") === -1) {
+  handler: async function pun(client, msg) {
+    if (msg.body.indexOf("!pun") === -1) {
       return;
     }
     let json = await requestJson(URL);
-    client.sendText(roomId, json.joke);
+    client.sendText(msg.room, json.joke);
   },
 
   help: "Reads a joke out loud from icanhazdadjoke.com. UNSAFE!"

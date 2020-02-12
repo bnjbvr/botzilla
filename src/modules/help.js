@@ -1,8 +1,8 @@
 let { RichReply } = require("matrix-bot-sdk");
 
 module.exports = {
-  handler: function(client, roomId, msg, extra) {
-    if (msg.indexOf("!help") === -1) {
+  handler: function(client, msg, extra) {
+    if (msg.body.indexOf("!help") === -1) {
       return;
     }
 
@@ -39,7 +39,7 @@ module.exports = {
       text += `\n${notice}`;
     }
 
-    client.sendMessage(roomId, {
+    client.sendMessage(msg.room, {
       msgtype: "m.notice",
       body: text,
       format: "org.matrix.custom.html",
