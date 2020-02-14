@@ -1,17 +1,21 @@
 // Expands "bug XXXXXX" into a short URL to the bug, the status, assignee and
 // title of the bug.
+//
+// Note: don't catch expansions when seeing full Bugzilla URLs, because the
+// Matrix client may or may not display the URL, according to channel's
+// settings, users' settings, etc. and it's not possible to do something wise
+// for all the possible different configurations.
 
 let { request } = require("../utils");
 
 const BUG_NUMBER_REGEXP = /[Bb]ug (\d+)/g;
-const BUG_URL_REGEXP = /https:\/\/bugzilla\.mozilla\.org\/show_bug\.cgi\?id=(\d+)/g;
 
 const COOLDOWN_TIME = 120000; // milliseconds
 
 // Map roomId to bug-number to timer.
 const cooldown = new Map();
 
-async function handleBug(client, roomId, bugNumber, includeUrl) {
+async function handleBug(client, roomId, bugNumber) {
   let roomCooldown = cooldown.get(roomId);
   if (typeof roomCooldown !== "undefined") {
     if (typeof roomCooldown.get(bugNumber) !== "undefined") {
@@ -33,9 +37,7 @@ async function handleBug(client, roomId, bugNumber, includeUrl) {
   let shortUrl = `https://bugzil.la/${bugNumber}`;
   if (response.statusCode === 401) {
     // Probably a private bug! Just send the basic information.
-    if (includeUrl) {
-      client.sendText(roomId, shortUrl);
-    }
+    client.sendText(roomId, shortUrl);
     return;
   }
 
@@ -49,8 +51,7 @@ async function handleBug(client, roomId, bugNumber, includeUrl) {
   }
 
   let bug = json.bugs[0];
-  let maybeUrl = includeUrl ? `${shortUrl} — ` : "";
-  let msg = `${maybeUrl}${bug.status} (${bug.assigned_to_detail.nick}) — ${bug.summary}`;
+  let msg = `${shortUrl} — ${bug.status} (${bug.assigned_to_detail.nick}) — ${bug.summary}`;
   client.sendText(roomId, msg);
 
   let timerId = setTimeout(() => {
@@ -63,11 +64,7 @@ async function handleBug(client, roomId, bugNumber, includeUrl) {
 async function expandBugNumber(client, msg) {
   var matches = null;
   while ((matches = BUG_NUMBER_REGEXP.exec(msg.body)) !== null) {
-    await handleBug(client, msg.room, matches[1], true);
-  }
-  matches = null;
-  while ((matches = BUG_URL_REGEXP.exec(msg.body)) !== null) {
-    await handleBug(client, msg.room, matches[1], false);
+    await handleBug(client, msg.room, matches[1]);
   }
 }
 
