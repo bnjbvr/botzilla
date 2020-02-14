@@ -54,29 +54,44 @@ function makeHandleCommand(client, config) {
     console.log("Received event: ", JSON.stringify(event));
 
     // Don't handle events that don't have contents (they were probably redacted)
-    if (!event["content"]) {
+    let content = event.content;
+    if (!content) {
       return;
     }
 
     // Ignore messages published before we started.
-    if (parseInt(event["origin_server_ts"]) < startTime) {
+    if (parseInt(event.origin_server_ts) < startTime) {
       return;
     }
 
     // Don't handle non-text events
-    if (event["content"]["msgtype"] !== "m.text") {
-      return;
-    }
-
-    // Filter out events sent by the bot itself.
-    let sender = event["sender"];
-    if (sender === (await client.getUserId())) {
+    if (content.msgtype !== "m.text") {
       return;
     }
 
     // Make sure that the event looks like a command we're expecting
-    let body = event["content"]["body"];
+    let body = content.body;
     if (!body) {
+      return;
+    }
+
+    // Strip answer content in replies.
+    if (typeof content["m.relates_to"] !== "undefined") {
+      if (typeof content["m.relates_to"]["m.in_reply_to"] !== "undefined") {
+        let lines = body.split("\n");
+        while (
+          lines.length &&
+          (lines[0].startsWith("> ") || !lines[0].trim().length)
+        ) {
+          lines.shift();
+        }
+        body = lines.join("\n");
+      }
+    }
+
+    // Filter out events sent by the bot itself.
+    let sender = event.sender;
+    if (sender === (await client.getUserId())) {
       return;
     }
 
