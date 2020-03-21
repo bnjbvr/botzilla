@@ -10,32 +10,28 @@ let {
 let fs = require("fs");
 let path = require("path");
 
-function loadConfig(fileName) {
+let util = require("util");
+let fsReadDir = util.promisify(fs.readdir);
+
+let settings = require("./settings");
+
+async function loadConfig(fileName) {
   let config = JSON.parse(fs.readFileSync(fileName));
 
   const handlers = [];
   const handlerNames = [];
   const helpMessages = {};
 
-  function addOneModule(handlerName) {
-    let mod;
-    try {
-      mod = require(`./modules/${handlerName}`);
-    } catch (err) {
-      console.error("unknown handler:", handlerName);
-      return;
-    }
-    handlerNames.push(handlerName);
-    handlers.push(mod.handler);
-    helpMessages[handlerName] = mod.help || "No help for this module.";
-  }
-
-  for (let handlerName of config.handlers) {
-    addOneModule(handlerName);
-  }
-
-  if (!handlerNames.includes("help")) {
-    addOneModule("help");
+  let moduleNames = await fsReadDir(path.join(__dirname, "modules"));
+  moduleNames = moduleNames.map(filename => filename.split(".js")[0]);
+  for (let moduleName of moduleNames) {
+    let mod = require("./" + path.join("modules", moduleName));
+    handlerNames.push(moduleName);
+    handlers.push({
+      moduleName,
+      handler: mod.handler
+    });
+    helpMessages[moduleName] = mod.help || "No help for this module.";
   }
 
   return {
@@ -109,8 +105,16 @@ function makeHandleCommand(client, config) {
       room
     };
 
-    for (let handler of config.handlers) {
+    for (let { moduleName, handler } of config.handlers) {
       let extra = Object.assign({}, config.extra);
+
+      if (moduleName !== "admin") {
+        let enabled = await settings.isModuleEnabled(room, moduleName);
+        if (!enabled) {
+          continue;
+        }
+      }
+
       try {
         await handler(client, msg, extra);
       } catch (err) {
@@ -121,7 +125,7 @@ function makeHandleCommand(client, config) {
 }
 
 async function createClient(configFilename) {
-  const config = loadConfig(configFilename);
+  const config = await loadConfig(configFilename);
 
   switch (config.logLevel) {
     case "trace":
@@ -199,6 +203,8 @@ CONFIG[n] files are config.json files based on config.json.example.
       process.exit(0);
     }
   }
+
+  await require("./db").init();
 
   let configFilenames = cliArgs.length ? cliArgs : ["config.json"];
 

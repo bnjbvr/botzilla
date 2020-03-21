@@ -1,5 +1,6 @@
 *.json
 data/
+db.sqlite
 
 yarn.lock
 yarn-error.log
