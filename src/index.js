@@ -2,7 +2,9 @@ let {
   MatrixClient,
   SimpleFsStorageProvider,
   AutojoinRoomsMixin,
-  RichReply
+  RichReply,
+  LogService,
+  LogLevel
 } = require("matrix-bot-sdk");
 
 let fs = require("fs");
@@ -43,7 +45,8 @@ function loadConfig(fileName) {
     extra: {
       handlerNames,
       helpMessages,
-      owner: config.owner
+      owner: config.owner,
+      logLevel: config.logLevel || "warn"
     }
   };
 }
@@ -119,6 +122,24 @@ function makeHandleCommand(client, config) {
 
 async function createClient(configFilename) {
   const config = loadConfig(configFilename);
+
+  switch (config.logLevel) {
+    case "trace":
+      break;
+    case "debug":
+      LogService.setLevel(LogLevel.DEBUG);
+      break;
+    case "info":
+      LogService.setLevel(LogLevel.INFO);
+      break;
+    case "warn":
+    default:
+      LogService.setLevel(LogLevel.WARN);
+      break;
+    case "error":
+      LogService.setLevel(LogLevel.ERROR);
+      break;
+  }
 
   const prefix = configFilename.replace(".json", "").replace("config-", "");
 
