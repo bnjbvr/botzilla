@@ -127,7 +127,7 @@ function makeHandleCommand(client, config) {
 async function createClient(configFilename) {
   const config = await loadConfig(configFilename);
 
-  switch (config.logLevel) {
+  switch (config.extra.logLevel) {
     case "trace":
       break;
     case "debug":
