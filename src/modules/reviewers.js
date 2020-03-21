@@ -31,7 +31,9 @@ async function getReviewers(path) {
 
   return Object.entries(reviewers)
     .map(([name, count]) => ({ name, count }))
-    .sort((a, b) => { return b.count - a.count; });
+    .sort((a, b) => {
+      return b.count - a.count;
+    });
 }
 
 module.exports = {
@@ -50,9 +52,11 @@ module.exports = {
         reviewers.length = MAX_REVIEWERS;
       }
 
-      const list = reviewers.map(({ name, count }) => {
-        return `${name} x ${count}`;
-      }).join(", ");
+      const list = reviewers
+        .map(({ name, count }) => {
+          return `${name} x ${count}`;
+        })
+        .join(", ");
 
       client.sendText(msg.room, `${list} : /${path}`);
     } catch (e) {
@@ -60,6 +64,5 @@ module.exports = {
     }
   },
 
-  help:
-    "Suggest reviewers for given file in m-c. Usage: Who can review <path>?"
+  help: "Suggest reviewers for given file in m-c. Usage: Who can review <path>?"
 };
