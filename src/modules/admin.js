@@ -8,12 +8,20 @@ async function isAdmin(from, extra) {
   return extra.owner === from;
 }
 
+async function isAuthorized(client, msg, extra) {
+  return await isAdmin(msg.sender, extra);
+}
+
 async function enableForRoom(client, regexp, msg, room, extra) {
   regexp.lastIndex = 0;
 
   let match = regexp.exec(msg.body);
   if (match === null) {
     return false;
+  }
+
+  if (!await isAuthorized(client, msg, extra)) {
+    return true;
   }
 
   let enabled = match[1] === "enable";
@@ -48,6 +56,11 @@ async function tryList(client, msg, extra) {
   if (msg.body.trim() !== "!admin list") {
     return false;
   }
+
+  if (!await isAuthorized(client, msg, extra)) {
+    return true;
+  }
+
   let response = extra.handlerNames.join(", ");
   client.sendText(msg.room, response);
   return true;
@@ -56,6 +69,10 @@ async function tryList(client, msg, extra) {
 async function tryEnabledStatus(client, msg, extra) {
   if (msg.body.trim() !== "!admin status") {
     return false;
+  }
+
+  if (!await isAuthorized(client, msg, extra)) {
+    return true;
   }
 
   let response = "";
@@ -93,14 +110,6 @@ async function tryEnabledStatus(client, msg, extra) {
 }
 
 async function handler(client, msg, extra) {
-  if (!(await isAdmin(msg.sender, extra))) {
-    client.sendText(
-      msg.room,
-      "Sorry, you're not a Botzilla admin for this room."
-    );
-    return;
-  }
-
   if (await tryEnable(client, msg, extra)) {
     return;
   }
