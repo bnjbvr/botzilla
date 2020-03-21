@@ -15,6 +15,9 @@ let fsReadDir = util.promisify(fs.readdir);
 
 let settings = require("./settings");
 
+// A place where to store the client, for cleanup purposes.
+let CLIENT = null;
+
 async function loadConfig(fileName) {
   let config = JSON.parse(fs.readFileSync(fileName));
 
@@ -180,6 +183,9 @@ async function createClient(configFilename) {
   // client up. This will start it syncing.
   await client.start();
   console.log("Client started!");
+
+  CLIENT = client;
+  await client.setPresenceStatus("online", "bot has been started");
 }
 
 async function main() {
@@ -215,3 +221,42 @@ CONFIG[n] files are config.json files based on config.json.example.
 main().catch(err => {
   console.error("Error in main:", err.stack);
 });
+
+function wait(ms) {
+  return new Promise(ok => {
+    setTimeout(ok, ms);
+  });
+}
+
+async function exitHandler(options = {}) {
+  if (CLIENT === null) {
+    return;
+  }
+
+
+  let _client = CLIENT;
+  CLIENT = null;
+
+  console.log("setting bot presence to offline...");
+
+  _client.stop();
+  await wait(1000);
+  await _client.setPresenceStatus("offline", "bot exited");
+
+  while (true) {
+    let state = await _client.getPresenceStatus();
+    if (state.presence !== "online") {
+      break;
+    }
+    console.log("waiting, status is", state.presence);
+    await wait(11000);
+  }
+  console.log("Done, ciao!");
+  process.exit(0);
+}
+
+// Misc signals (Ctrl+C, kill, etc.).
+process.on("SIGINT", exitHandler);
+process.on("SIGHUP", exitHandler);
+process.on("SIGQUIT", exitHandler);
+process.on("SIGTERM", exitHandler);
