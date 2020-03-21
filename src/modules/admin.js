@@ -1,5 +1,7 @@
 let settings = require("../settings");
 
+// All the admin commands must start with !admin.
+
 const ENABLE_REGEXP = /!admin (enable|disable) ([a-zA-Z-]+)/g;
 const ENABLE_ALL_REGEXP = /!admin (enable|disable)-all ([a-zA-Z-]+)/g;
 
@@ -8,20 +10,12 @@ async function isAdmin(from, extra) {
   return extra.owner === from;
 }
 
-async function isAuthorized(client, msg, extra) {
-  return await isAdmin(msg.sender, extra);
-}
-
 async function enableForRoom(client, regexp, msg, room, extra) {
   regexp.lastIndex = 0;
 
   let match = regexp.exec(msg.body);
   if (match === null) {
     return false;
-  }
-
-  if (!await isAuthorized(client, msg, extra)) {
-    return true;
   }
 
   let enabled = match[1] === "enable";
@@ -56,11 +50,6 @@ async function tryList(client, msg, extra) {
   if (msg.body.trim() !== "!admin list") {
     return false;
   }
-
-  if (!await isAuthorized(client, msg, extra)) {
-    return true;
-  }
-
   let response = extra.handlerNames.join(", ");
   client.sendText(msg.room, response);
   return true;
@@ -69,10 +58,6 @@ async function tryList(client, msg, extra) {
 async function tryEnabledStatus(client, msg, extra) {
   if (msg.body.trim() !== "!admin status") {
     return false;
-  }
-
-  if (!await isAuthorized(client, msg, extra)) {
-    return true;
   }
 
   let response = "";
@@ -110,6 +95,12 @@ async function tryEnabledStatus(client, msg, extra) {
 }
 
 async function handler(client, msg, extra) {
+  if (!msg.body.startsWith("!admin")) {
+    return;
+  }
+  if (!(await isAdmin(msg.sender, extra))) {
+    return;
+  }
   if (await tryEnable(client, msg, extra)) {
     return;
   }
@@ -122,9 +113,14 @@ async function handler(client, msg, extra) {
   if (await tryList(client, msg, extra)) {
     return;
   }
+  client.sendText(
+    msg.room,
+    "unknown admin command; possible commands are: 'enable|disable|enable-all|disable-all|list|status.'"
+  );
 }
 
 module.exports = {
   handler,
-  help: "Helps administrator configure the current Botzilla instance."
+  help: `Helps administrator configure the current Botzilla instance.
+    Possible commands are: enable (module)|disable (module)|enable-all (module)|disable-all (module)|list|status`
 };
