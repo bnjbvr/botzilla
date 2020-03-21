@@ -1,9 +1,11 @@
 let sqlite = require("sqlite");
+let path = require("path");
 
 let db;
 
-async function init() {
-  db = await sqlite.open("./db.sqlite", { Promise, verbose: true });
+async function init(storageDir) {
+  let dbPath = path.join(storageDir, "db.sqlite");
+  db = await sqlite.open(dbPath, { Promise, verbose: true });
   db.on("trace", event => console.log(event));
   await db.migrate();
 }

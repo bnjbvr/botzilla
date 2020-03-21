@@ -162,6 +162,8 @@ async function createClient(configFilename) {
     path.join(storageDir, "matrix.json")
   );
 
+  await require("./db").init(storageDir);
+
   // Now we can create the client and set it up to automatically join rooms.
   const client = new MatrixClient(
     config.homeserverUrl,
@@ -204,13 +206,9 @@ CONFIG[n] files are config.json files based on config.json.example.
     }
   }
 
-  await require("./db").init();
+  let configFilename = cliArgs.length ? cliArgs[0] : "config.json";
 
-  let configFilenames = cliArgs.length ? cliArgs : ["config.json"];
-
-  for (let configFilename of configFilenames) {
-    await createClient(configFilename);
-  }
+  await createClient(configFilename);
 }
 
 // No top-level await, alright.
