@@ -44,6 +44,15 @@ async function tryEnableAll(client, msg, extra) {
   return enableForRoom(client, ENABLE_ALL_REGEXP, msg, "*", extra);
 }
 
+async function tryList(client, msg, extra) {
+  if (msg.body.trim() !== "!admin list") {
+    return false;
+  }
+  let response = extra.handlerNames.join(", ");
+  client.sendText(msg.room, response);
+  return true;
+}
+
 async function tryEnabledStatus(client, msg, extra) {
   if (msg.body.trim() !== "!admin status") {
     return false;
@@ -99,6 +108,9 @@ async function handler(client, msg, extra) {
     return;
   }
   if (await tryEnabledStatus(client, msg, extra)) {
+    return;
+  }
+  if (await tryList(client, msg, extra)) {
     return;
   }
 }
