@@ -6,6 +6,7 @@ RUN apt-get update \
  && mkdir -p /app/data
 
 COPY ./src /app/src
+COPY ./migrations /app/migrations
 COPY package.json /app/package.json
 
 WORKDIR /app
