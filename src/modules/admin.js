@@ -5,9 +5,17 @@ let settings = require("../settings");
 const ENABLE_REGEXP = /!admin (enable|disable) ([a-zA-Z-]+)/g;
 const ENABLE_ALL_REGEXP = /!admin (enable|disable)-all ([a-zA-Z-]+)/g;
 
+// set MODULE_NAME KEY VALUE
+const SET_REGEXP = /!admin set ([a-zA-Z-]+) ([a-zA-Z-_]+) (.*)/g;
+const GET_REGEXP = /!admin get ([a-zA-Z-]+) ([a-zA-Z-_]+)/g;
+
 async function isAdmin(from, extra) {
   // At the moment, do something simple.
   return extra.owner === from;
+}
+
+function moduleExists(moduleName, extra) {
+  return extra.handlerNames.indexOf(moduleName) !== -1;
 }
 
 async function enableForRoom(client, regexp, msg, room, extra) {
@@ -21,7 +29,7 @@ async function enableForRoom(client, regexp, msg, room, extra) {
   let enabled = match[1] === "enable";
   let moduleName = match[2];
 
-  if (extra.handlerNames.indexOf(moduleName) === -1) {
+  if (!moduleExists(moduleName, extra)) {
     client.sendText(msg.room, "Unknown module.");
     return true;
   }
@@ -63,6 +71,7 @@ async function tryEnabledStatus(client, msg, extra) {
   let response = "";
 
   let status = await settings.getSettings();
+
   for (const roomId in status) {
     let roomText = roomId === "*" ? "all" : roomId;
 
@@ -70,9 +79,10 @@ async function tryEnabledStatus(client, msg, extra) {
       .map(key => {
         if (
           typeof status[roomId] !== "undefined" &&
-          typeof status[roomId][key] === "boolean"
+          typeof status[roomId][key] === "object" &&
+          typeof status[roomId][key].enabled !== "undefined"
         ) {
-          return status[roomId][key] ? key : "!" + key;
+          return status[roomId][key].enabled ? key : "!" + key;
         }
         return undefined;
       })
@@ -91,6 +101,48 @@ async function tryEnabledStatus(client, msg, extra) {
   }
 
   client.sendText(msg.room, response);
+  return true;
+}
+
+async function trySet(client, msg, extra) {
+  SET_REGEXP.lastIndex = 0;
+
+  let match = SET_REGEXP.exec(msg.body);
+  if (match === null) {
+    return false;
+  }
+
+  let moduleName = match[1];
+  if (!moduleExists(moduleName, extra)) {
+    client.sendText(msg.room, "Unknown module");
+    return true;
+  }
+
+  let key = match[2];
+  let value = match[3];
+  await settings.setOption(msg.room, moduleName, key, value);
+
+  client.sendText(msg.room, "set value for this room");
+  return true;
+}
+
+async function tryGet(client, msg, extra) {
+  GET_REGEXP.lastIndex = 0;
+
+  let match = GET_REGEXP.exec(msg.body);
+  if (match === null) {
+    return false;
+  }
+
+  let moduleName = match[1];
+  if (!moduleExists(moduleName, extra)) {
+    client.sendText(msg.room, "Unknown module");
+    return true;
+  }
+
+  let key = match[2];
+  let read = await settings.getOption(msg.room, moduleName, key);
+  client.sendText(msg.room, `${key}'s' value in this room is ${read}`);
   return true;
 }
 
@@ -113,14 +165,20 @@ async function handler(client, msg, extra) {
   if (await tryList(client, msg, extra)) {
     return;
   }
+  if (await trySet(client, msg, extra)) {
+    return;
+  }
+  if (await tryGet(client, msg, extra)) {
+    return;
+  }
   client.sendText(
     msg.room,
-    "unknown admin command; possible commands are: 'enable|disable|enable-all|disable-all|list|status.'"
+    "unknown admin command; possible commands are: 'enable|disable|enable-all|disable-all|list|status|set|get.'"
   );
 }
 
 module.exports = {
   handler,
   help: `Helps administrator configure the current Botzilla instance.
-    Possible commands are: enable (module)|disable (module)|enable-all (module)|disable-all (module)|list|status`
+    Possible commands are: enable (module)|disable (module)|enable-all (module)|disable-all (module)|list|status|set|get`
 };

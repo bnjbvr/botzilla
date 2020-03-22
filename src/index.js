@@ -233,7 +233,6 @@ async function exitHandler(options = {}) {
     return;
   }
 
-
   let _client = CLIENT;
   CLIENT = null;
 

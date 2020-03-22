@@ -1,5 +1,3 @@
-let { RichReply } = require("matrix-bot-sdk");
-
 let _ = require("../html");
 
 const MATCH_REGEXP = /!help ?([a-zA-Z-]+)?/g;

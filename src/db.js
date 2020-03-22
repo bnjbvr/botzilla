@@ -10,7 +10,7 @@ async function init(storageDir) {
   await db.migrate();
 }
 
-async function upsertModuleSetting(roomId, moduleName, enabled) {
+async function upsertModuleSettingEnabled(roomId, moduleName, enabled) {
   let former = await db.get(
     "SELECT id FROM ModuleSetting WHERE matrixRoomId = ? AND moduleName = ?",
     roomId,
@@ -32,15 +32,40 @@ async function upsertModuleSetting(roomId, moduleName, enabled) {
   }
 }
 
+async function upsertModuleSettingOptions(roomId, moduleName, options) {
+  let stringified = JSON.stringify(options);
+  let former = await db.get(
+    "SELECT id FROM ModuleSetting WHERE matrixRoomId = ? AND moduleName = ?",
+    roomId,
+    moduleName
+  );
+  if (typeof former === "undefined") {
+    await db.run(
+      "INSERT INTO ModuleSetting (matrixRoomId, moduleName, enabled, options) VALUES (?, ?, ?, ?)",
+      roomId,
+      moduleName,
+      false /*enabled*/,
+      stringified
+    );
+  } else {
+    await db.run(
+      "UPDATE ModuleSetting SET options = ? where id = ?",
+      stringified,
+      former.id
+    );
+  }
+}
+
 async function getModuleSettings() {
   let results = await db.all(
-    "SELECT moduleName, matrixRoomId, enabled FROM ModuleSetting;"
+    "SELECT moduleName, matrixRoomId, enabled, options FROM ModuleSetting;"
   );
   return results;
 }
 
 module.exports = {
   init,
-  upsertModuleSetting,
+  upsertModuleSettingEnabled,
+  upsertModuleSettingOptions,
   getModuleSettings
 };
