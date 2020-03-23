@@ -4,6 +4,8 @@
 
 const { requestJson } = require("../utils");
 
+const SEARCH_FOX_QUERY =
+  "https://searchfox.org/mozilla-central/search?q=&path=**/{{FILENAME}}";
 const JSON_URL = "https://hg.mozilla.org/mozilla-central/json-log/tip/";
 const MESSAGE_REGEXP = /[wW]ho (?:can review|has reviewed) (?:a patch in |patches in )?\/?(\S+?)\s*\??$/;
 const REVIEWER_REGEXP = /r=(\S+)/;
@@ -36,6 +38,25 @@ async function getReviewers(path) {
     });
 }
 
+async function fuzzyMatch(path) {
+  let result;
+  try {
+    const url = SEARCH_FOX_QUERY.replace("{{FILENAME}}", path);
+    result = await requestJson(url);
+  } catch (_) {
+    // Just try the normal path in case of error.
+  }
+
+  if (result && result.normal && result.normal.Files) {
+    let files = result.normal.Files;
+    if (files.length === 1 && files[0].path.trim().length) {
+      return files[0].path;
+    }
+  }
+
+  return path;
+}
+
 module.exports = {
   handler: async function(client, msg) {
     const m = msg.body.match(MESSAGE_REGEXP);
@@ -43,7 +64,7 @@ module.exports = {
       return;
     }
 
-    const path = m[1];
+    const path = await fuzzyMatch(m[1]);
 
     try {
       const reviewers = await getReviewers(path);
@@ -52,13 +73,16 @@ module.exports = {
         reviewers.length = MAX_REVIEWERS;
       }
 
-      const list = reviewers
-        .map(({ name, count }) => {
-          return `${name} x ${count}`;
-        })
-        .join(", ");
+      const list =
+        reviewers.length > 0
+          ? reviewers
+              .map(({ name, count }) => {
+                return `${name} x${count}`;
+              })
+              .join(", ")
+          : "found no previous reviewers for";
 
-      client.sendText(msg.room, `${list} : /${path}`);
+      client.sendText(msg.room, `${list}: /${path}`);
     } catch (e) {
       client.sendText(msg.room, `Could not find reviewers for /${path}`);
     }
