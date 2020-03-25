@@ -27,8 +27,12 @@ async function loadConfig(fileName) {
 
   let moduleNames = await fsReadDir(path.join(__dirname, "modules"));
   moduleNames = moduleNames.map(filename => filename.split(".js")[0]);
+
   for (let moduleName of moduleNames) {
-    let mod = require("./" + path.join("modules", moduleName));
+    let mod = require('./' + path.join("modules", moduleName));
+    if (mod.init) {
+        await mod.init(config);
+    }
     handlerNames.push(moduleName);
     handlers.push({
       moduleName,
@@ -45,7 +49,8 @@ async function loadConfig(fileName) {
       handlerNames,
       helpMessages,
       owner: config.owner,
-      logLevel: config.logLevel || "warn"
+      logLevel: config.logLevel || "warn",
+        homeserverDomain: config.homeserverDomain || null
     }
   };
 }
@@ -105,7 +110,8 @@ function makeHandleCommand(client, config) {
     let msg = {
       body,
       sender,
-      room
+      room,
+      event
     };
 
     for (let { moduleName, handler } of config.handlers) {

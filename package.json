@@ -20,6 +20,7 @@
   "homepage": "https://github.com/bnjbvr/botzilla#readme",
   "dependencies": {
     "matrix-bot-sdk": "^0.4.0",
+    "octonode": "^0.9.5",
     "request": "^2.88.0",
     "sqlite": "^3.0.3",
     "uuid": "^3.3.3"
