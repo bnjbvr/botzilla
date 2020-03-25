@@ -29,9 +29,9 @@ async function loadConfig(fileName) {
   moduleNames = moduleNames.map(filename => filename.split(".js")[0]);
 
   for (let moduleName of moduleNames) {
-    let mod = require('./' + path.join("modules", moduleName));
+    let mod = require("./" + path.join("modules", moduleName));
     if (mod.init) {
-        await mod.init(config);
+      await mod.init(config);
     }
     handlerNames.push(moduleName);
     handlers.push({
@@ -49,8 +49,7 @@ async function loadConfig(fileName) {
       handlerNames,
       helpMessages,
       owner: config.owner,
-      logLevel: config.logLevel || "warn",
-        homeserverDomain: config.homeserverDomain || null
+      logLevel: config.logLevel || "warn"
     }
   };
 }

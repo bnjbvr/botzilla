@@ -1,6 +1,5 @@
 {
     "homeserver": "https://mozilla-test.modular.im",
-    "homeserverDomain": "mozilla.org",
     "accessToken": "Your access token here. See https://t2bot.io/docs/access_tokens/ for details.",
     "owner": "@somebody:matrix.example.com",
     "logLevel": "warn",
