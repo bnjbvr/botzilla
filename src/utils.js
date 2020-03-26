@@ -98,15 +98,23 @@ class Cooldown {
         entry.timer = null;
       }, this.timeout);
     }
+    if (this.numMessages !== null) {
+      entry.numMessages = this.numMessages;
+    }
+  }
+
+  onNewMessage(key) {
+    if (this.numMessages !== null) {
+      let entry = this._ensureEntry(key);
+      if (entry.numMessages > 0) {
+        entry.numMessages -= 1;
+      }
+    }
   }
 
   check(key) {
     let entry = this._ensureEntry(key);
-    let result = entry.timer === null && entry.numMessages === 0;
-    if (this.numMessages !== null) {
-      entry.numMessages = (entry.numMessages + 1) % this.numMessages;
-    }
-    return result;
+    return entry.timer === null && entry.numMessages === 0;
   }
 }
 

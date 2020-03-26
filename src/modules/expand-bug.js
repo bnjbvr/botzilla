@@ -13,11 +13,14 @@ const BUG_NUMBER_REGEXP = /[Bb]ug (\d+)/g;
 const COOLDOWN_TIME = 120000; // milliseconds
 const COOLDOWN_NUM_MESSAGES = 15;
 
-let cooldown = new utils.Cooldown(COOLDOWN_TIME, COOLDOWN_NUM_MESSAGES);
+let cooldowns = {};
 
 async function handleBug(client, roomId, bugNumber) {
-  let key = roomId + "-" + bugNumber;
-  if (!cooldown.check(key)) {
+  if (typeof cooldowns[bugNumber] === "undefined") {
+    cooldowns[bugNumber] = new utils.Cooldown(null, 5);
+  }
+  let cooldown = cooldowns[bugNumber];
+  if (!cooldown.check(roomId)) {
     return;
   }
 
@@ -31,7 +34,7 @@ async function handleBug(client, roomId, bugNumber) {
   let shortUrl = `https://bugzil.la/${bugNumber}`;
   if (response.statusCode === 401) {
     // Probably a private bug! Just send the basic information.
-    cooldown.didAnswer(key);
+    cooldown.didAnswer(roomId);
     client.sendText(roomId, shortUrl);
     return;
   }
@@ -47,11 +50,15 @@ async function handleBug(client, roomId, bugNumber) {
 
   let bug = json.bugs[0];
   let msg = `${shortUrl} — ${bug.status} (${bug.assigned_to_detail.nick}) — ${bug.summary}`;
-  cooldown.didAnswer(key);
+  cooldown.didAnswer(roomId);
   client.sendText(roomId, msg);
 }
 
 async function expandBugNumber(client, msg) {
+  for (let key of Object.getOwnPropertyNames(cooldowns)) {
+    cooldowns[key].onNewMessage(msg.room);
+  }
+
   var matches = null;
   while ((matches = BUG_NUMBER_REGEXP.exec(msg.body)) !== null) {
     await handleBug(client, msg.room, matches[1]);

@@ -13,7 +13,7 @@ const PATH = "users/{USER}/{USER}.{ERA}.txt";
 const CONFESSION_REGEXP = /^confession:(.*)/g;
 
 const COOLDOWN_TIMEOUT = 1000 * 60 * 60; // every 10 minutes
-const COOLDOWN_NUM_MESSAGES = null;
+const COOLDOWN_NUM_MESSAGES = 20;
 let cooldown = new utils.Cooldown(COOLDOWN_TIMEOUT, COOLDOWN_NUM_MESSAGES);
 
 async function handler(client, msg, extra) {
@@ -25,6 +25,8 @@ async function handler(client, msg, extra) {
   if (!userRepo) {
     return;
   }
+
+  cooldown.onNewMessage(msg.room);
 
   CONFESSION_REGEXP.lastIndex = 0;
   let match = CONFESSION_REGEXP.exec(msg.body);
