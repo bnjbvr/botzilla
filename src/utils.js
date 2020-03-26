@@ -71,11 +71,51 @@ async function sendSeen(client, msg) {
   return sendReaction(client, msg, "👀");
 }
 
+class Cooldown {
+  constructor(timeout, numMessages) {
+    this.timeout = timeout;
+    this.numMessages = numMessages;
+    this.map = {};
+  }
+
+  _ensureEntry(key) {
+    if (typeof this.map[key] === "undefined") {
+      this.map[key] = {
+        numMessages: 0,
+        timer: null
+      };
+    }
+    return this.map[key];
+  }
+
+  didAnswer(key) {
+    let entry = this._ensureEntry(key);
+    if (this.timeout !== null) {
+      if (entry.timer !== null) {
+        clearTimeout(entry.timer);
+      }
+      entry.timer = setTimeout(() => {
+        entry.timer = null;
+      }, this.timeout);
+    }
+  }
+
+  check(key) {
+    let entry = this._ensureEntry(key);
+    let result = entry.timer === null && entry.numMessages === 0;
+    if (this.numMessages !== null) {
+      entry.numMessages = (entry.numMessages + 1) % this.numMessages;
+    }
+    return result;
+  }
+}
+
 module.exports = {
   request: promiseRequest,
   requestJson,
   getRoomAlias,
   sendReaction,
   sendThumbsUp,
-  sendSeen
+  sendSeen,
+  Cooldown
 };

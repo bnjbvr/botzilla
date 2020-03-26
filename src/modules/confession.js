@@ -12,6 +12,10 @@ const PATH = "users/{USER}/{USER}.{ERA}.txt";
 
 const CONFESSION_REGEXP = /^confession:(.*)/g;
 
+const COOLDOWN_TIMEOUT = 1000 * 60 * 60; // every 10 minutes
+const COOLDOWN_NUM_MESSAGES = null;
+let cooldown = new utils.Cooldown(COOLDOWN_TIMEOUT, COOLDOWN_NUM_MESSAGES);
+
 async function handler(client, msg, extra) {
   if (!GITHUB_CLIENT) {
     return;
@@ -53,6 +57,7 @@ async function handler(client, msg, extra) {
   let newLine = `${now} ${roomAlias} ${confession}`;
   let commitMessage = `update from ${from}`;
 
+  let done = false;
   try {
     let resp = await repo.contentsAsync(path);
     let sha = resp[0].sha;
@@ -61,14 +66,28 @@ async function handler(client, msg, extra) {
     content += `\n${newLine}`;
 
     await repo.updateContentsAsync(path, commitMessage, content, sha);
-    await utils.sendSeen(client, msg);
+    done = true;
   } catch (err) {
     if (err.statusCode && err.statusCode === 404) {
       // Create the file.
       await repo.createContentsAsync(path, commitMessage, newLine);
-      await utils.sendSeen(client, msg);
+      done = true;
     } else {
       throw err;
+    }
+  }
+
+  if (done) {
+    await utils.sendSeen(client, msg);
+    if (cooldown.check(msg.room)) {
+      let split = userRepo.split("/");
+      let user = split[0];
+      let project = split[1];
+      await client.sendText(
+        msg.room,
+        `Seen! Your update will eventually appear on https://${user}.github.io/${project}`
+      );
+      cooldown.didAnswer(msg.room);
     }
   }
 }
