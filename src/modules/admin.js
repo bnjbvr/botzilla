@@ -1,4 +1,5 @@
-let settings = require("../settings");
+const settings = require("../settings");
+const utils = require("../utils");
 
 // All the admin commands must start with !admin.
 
@@ -35,14 +36,7 @@ async function enableForRoom(client, regexp, msg, room, extra) {
   }
 
   await settings.enableModule(room, moduleName, enabled);
-
-  let enabledText = match[1] + "d"; // heh
-  let roomText = room === "*" ? "all the rooms" : "this room";
-  client.sendText(
-    msg.room,
-    `The module ${moduleName} has been ${enabledText} in ${roomText}.`
-  );
-
+  await utils.sendThumbsUp(client, msg);
   return true;
 }
 
@@ -73,7 +67,15 @@ async function tryEnabledStatus(client, msg, extra) {
   let status = await settings.getSettings();
 
   for (const roomId in status) {
-    let roomText = roomId === "*" ? "all" : roomId;
+    let roomText;
+    if (roomId === "*") {
+      roomText = "all";
+    } else {
+      roomText = await utils.getRoomAlias(client, roomId);
+      if (!roomText) {
+        roomText = roomId;
+      }
+    }
 
     let enabledModules = Object.keys(status[roomId])
       .map(key => {
@@ -115,10 +117,8 @@ async function trySet(client, msg, extra) {
   let roomId, whichRoom;
   if (typeof match[1] !== "undefined") {
     roomId = "*";
-    whichRoom = "all the rooms";
   } else {
     roomId = msg.room;
-    whichRoom = "this room";
   }
 
   let moduleName = match[2];
@@ -131,7 +131,7 @@ async function trySet(client, msg, extra) {
   let value = match[4];
   await settings.setOption(roomId, moduleName, key, value);
 
-  client.sendText(msg.room, `set value for ${whichRoom}`);
+  await utils.sendThumbsUp(client, msg);
   return true;
 }
 

@@ -1,5 +1,6 @@
 const github = require("octonode");
 const settings = require("../settings");
+const utils = require("../utils");
 
 let GITHUB_CLIENT = null;
 
@@ -10,32 +11,6 @@ async function init(config) {
 const PATH = "users/{USER}/{USER}.{ERA}.txt";
 
 const CONFESSION_REGEXP = /^confession:(.*)/g;
-
-let reactionId = 0;
-
-// TODO make this available to all the modules.
-async function sendReaction(client, msg, emoji = "👀") {
-  let encodedRoomId = encodeURIComponent(msg.room);
-
-  let body = {
-    "m.relates_to": {
-      rel_type: "m.annotation",
-      event_id: msg.event.event_id,
-      key: emoji
-    }
-  };
-
-  let now = (Date.now() / 1000) | 0;
-  let transactionId = now + "_botzilla_emoji" + reactionId++;
-  let resp = await client.doRequest(
-    "PUT",
-    `/_matrix/client/r0/rooms/${encodedRoomId}/send/m.reaction/${transactionId}`,
-    null, // qs
-    body
-  );
-}
-
-let aliasCache = {};
 
 async function handler(client, msg, extra) {
   if (!GITHUB_CLIENT) {
@@ -58,32 +33,6 @@ async function handler(client, msg, extra) {
     return;
   }
 
-  // TODO make this a service accessible to all the modules. This finds
-  // possible aliases for a given roomId.
-  let roomAlias = aliasCache[msg.room];
-  if (!roomAlias) {
-    try {
-      let resp = await client.getRoomStateEvent(
-        msg.room,
-        "m.room.canonical_alias",
-        ""
-      );
-      if (resp && resp.alias) {
-        let alias = resp.alias;
-        let resolvedRoomId = await client.resolveRoom(alias);
-        if (resolvedRoomId === msg.room) {
-          aliasCache[msg.room] = alias;
-          roomAlias = alias;
-        }
-      }
-    } catch (err) {
-      // Ignore.
-    }
-  }
-  if (!roomAlias) {
-    roomAlias = msg.room;
-  }
-
   let repo = GITHUB_CLIENT.repo(userRepo);
 
   let now = (Date.now() / 1000) | 0; // for ye ol' asm.js days.
@@ -93,6 +42,12 @@ async function handler(client, msg, extra) {
 
   // Remove prefix '@'.
   let from = msg.sender.substr(1, msg.sender.length);
+
+  let roomAlias = await utils.getRoomAlias(client, msg.room);
+  if (!roomAlias) {
+    // Probably a personal room.
+    roomAlias = "confession";
+  }
 
   let path = PATH.replace(/\{USER\}/g, from).replace("{ERA}", era);
   let newLine = `${now} ${roomAlias} ${confession}`;
@@ -106,12 +61,12 @@ async function handler(client, msg, extra) {
     content += `\n${newLine}`;
 
     await repo.updateContentsAsync(path, commitMessage, content, sha);
-    await sendReaction(client, msg);
+    await utils.sendSeen(client, msg);
   } catch (err) {
     if (err.statusCode && err.statusCode === 404) {
       // Create the file.
       await repo.createContentsAsync(path, commitMessage, newLine);
-      await sendReaction(client, msg);
+      await utils.sendSeen(client, msg);
     } else {
       throw err;
     }
