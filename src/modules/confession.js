@@ -1,4 +1,5 @@
 const github = require("octonode");
+const settings = require("../settings");
 
 let GITHUB_CLIENT = null;
 
@@ -41,6 +42,11 @@ async function handler(client, msg, extra) {
     return;
   }
 
+  let userRepo = await settings.getOption(msg.room, "confession", "userRepo");
+  if (!userRepo) {
+    return;
+  }
+
   CONFESSION_REGEXP.lastIndex = 0;
   let match = CONFESSION_REGEXP.exec(msg.body);
   if (match === null) {
@@ -78,8 +84,7 @@ async function handler(client, msg, extra) {
     roomAlias = msg.room;
   }
 
-  // TODO make this a value a setting?
-  let repo = GITHUB_CLIENT.repo("bnjbvr/histoire");
+  let repo = GITHUB_CLIENT.repo(userRepo);
 
   let now = (Date.now() / 1000) | 0; // for ye ol' asm.js days.
 

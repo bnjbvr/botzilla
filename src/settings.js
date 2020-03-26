@@ -35,11 +35,29 @@ async function enableModule(matrixRoomId, moduleName, enabled) {
 
 async function getOption(matrixRoomId, moduleName, key) {
   await getSettings();
-  let entry = ensureCacheEntry(matrixRoomId, moduleName);
-  if (typeof entry.options !== "object") {
-    return undefined;
+
+  // Prefer the room option if there's one, otherwise return the general value.
+
+  let allValue;
+  let allEntry = ensureCacheEntry("*", moduleName);
+  if (
+    typeof allEntry.options === "object" &&
+    allEntry.options !== null &&
+    !!allEntry.options[key]
+  ) {
+    allValue = allEntry.options[key];
   }
-  return entry.options[key];
+
+  let entry = ensureCacheEntry(matrixRoomId, moduleName);
+  if (
+    typeof entry.options === "object" &&
+    entry.options !== null &&
+    !!entry.options[key]
+  ) {
+    return entry.options[key];
+  }
+  // May be undefined.
+  return allValue;
 }
 
 async function setOption(matrixRoomId, moduleName, key, value) {

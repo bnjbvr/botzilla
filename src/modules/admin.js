@@ -6,8 +6,8 @@ const ENABLE_REGEXP = /!admin (enable|disable) ([a-zA-Z-]+)/g;
 const ENABLE_ALL_REGEXP = /!admin (enable|disable)-all ([a-zA-Z-]+)/g;
 
 // set MODULE_NAME KEY VALUE
-const SET_REGEXP = /!admin set ([a-zA-Z-]+) ([a-zA-Z-_]+) (.*)/g;
-const GET_REGEXP = /!admin get ([a-zA-Z-]+) ([a-zA-Z-_]+)/g;
+const SET_REGEXP = /!admin set(-all)? ([a-zA-Z-]+) ([a-zA-Z-_]+) (.*)/g;
+const GET_REGEXP = /!admin get(-all)? ([a-zA-Z-]+) ([a-zA-Z-_]+)/g;
 
 async function isAdmin(from, extra) {
   // At the moment, do something simple.
@@ -112,17 +112,26 @@ async function trySet(client, msg, extra) {
     return false;
   }
 
-  let moduleName = match[1];
+  let roomId, whichRoom;
+  if (typeof match[1] !== "undefined") {
+    roomId = "*";
+    whichRoom = "all the rooms";
+  } else {
+    roomId = msg.room;
+    whichRoom = "this room";
+  }
+
+  let moduleName = match[2];
   if (!moduleExists(moduleName, extra)) {
     client.sendText(msg.room, "Unknown module");
     return true;
   }
 
-  let key = match[2];
-  let value = match[3];
-  await settings.setOption(msg.room, moduleName, key, value);
+  let key = match[3];
+  let value = match[4];
+  await settings.setOption(roomId, moduleName, key, value);
 
-  client.sendText(msg.room, "set value for this room");
+  client.sendText(msg.room, `set value for ${whichRoom}`);
   return true;
 }
 
@@ -134,15 +143,24 @@ async function tryGet(client, msg, extra) {
     return false;
   }
 
-  let moduleName = match[1];
+  let roomId, whichRoom;
+  if (typeof match[1] !== "undefined") {
+    roomId = "*";
+    whichRoom = "all the rooms";
+  } else {
+    roomId = msg.room;
+    whichRoom = "this room";
+  }
+
+  let moduleName = match[2];
   if (!moduleExists(moduleName, extra)) {
     client.sendText(msg.room, "Unknown module");
     return true;
   }
 
-  let key = match[2];
+  let key = match[3];
   let read = await settings.getOption(msg.room, moduleName, key);
-  client.sendText(msg.room, `${key}'s' value in this room is ${read}`);
+  client.sendText(msg.room, `${key}'s' value in ${whichRoom} is ${read}`);
   return true;
 }
 
