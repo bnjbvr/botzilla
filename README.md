@@ -29,14 +29,32 @@ How to create a new module
 
 ```js
 {
-    handler: async function(client, roomId, msg) {
-        client.sendText(roomId, "hello world!");
+    handler: async function(client, msg) {
+        // This contains the message's content.
+        let body = msg.body;
+        if (body !== '!botsnack') {
+            return;
+        }
+
+        // This is the Matrix internal room identifier, not a pretty-printable
+        // room alias name.
+        let roomId = msg.room;
+
+        // This contains the full id of the sender, with the form
+        // nickname@domaine.com.
+        let sender = msg.sender;
+
+        client.sendText(roomId, `thanks ${sender} for the snack!`);
+        client.sendNotice(roomId, "i like snacks!");
     },
+
     help: "An help message for this module."
 }
 ```
 
-- The module's name is the file name, add it to your configuration.
+- The module's name is the file name.
+- It must be enabled by an admin with `!admin enable moduleName` for a single
+  room, or `!admin enable-all moduleName`.
 - Fun and profit.
 
 Deploy
