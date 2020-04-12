@@ -1,4 +1,4 @@
-*.json
+config*.json
 data/
 
 yarn.lock
