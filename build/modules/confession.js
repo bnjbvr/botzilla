@@ -15,7 +15,7 @@ async function init(config) {
     GITHUB_CLIENT = github.client(config.githubToken);
 }
 const PATH = "users/{USER}/{USER}.{ERA}.txt";
-const CONFESSION_REGEXP = /^confession:(.*)/g;
+const CONFESSION_REGEXP = /^confession:(.*)/gs;
 const COOLDOWN_TIMEOUT = 1000 * 60 * 60; // every 10 minutes
 const COOLDOWN_NUM_MESSAGES = 20;
 let cooldown = new utils.Cooldown(COOLDOWN_TIMEOUT, COOLDOWN_NUM_MESSAGES);
