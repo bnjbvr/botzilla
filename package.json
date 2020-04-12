@@ -25,10 +25,8 @@
     "octonode": "^0.9.5",
     "request": "^2.88.0",
     "sqlite": "^3.0.3",
-    "uuid": "^3.3.3"
-  },
-  "devDependencies": {
-    "prettier": "^1.19.1",
-    "typescript": "^3.8.3"
+    "uuid": "^3.3.3",
+    "prettier": "1.19.1",
+    "typescript": "3.8.3"
   }
 }
