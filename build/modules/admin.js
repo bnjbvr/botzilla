@@ -15,12 +15,6 @@ const ENABLE_REGEXP = /!admin (enable|disable)(-all)? ([a-zA-Z-]+)/g;
 const SET_REGEXP = /!admin set(-all)? ([a-zA-Z-]+) ([a-zA-Z-_]+) (.*)/g;
 // get MODULE_NAME KEY
 const GET_REGEXP = /!admin get(-all)? ([a-zA-Z-]+) ([a-zA-Z-_]+)/g;
-function isSuperAdmin(userId, extra) {
-    return extra.owner === userId;
-}
-async function isAdmin(client, roomId, userId, extra) {
-    return (isSuperAdmin(userId, extra) || (await utils.isAdmin(client, roomId, userId)));
-}
 function moduleExists(moduleName, extra) {
     return extra.handlerNames.indexOf(moduleName) !== -1;
 }
@@ -32,7 +26,7 @@ async function tryEnable(client, msg, extra) {
     }
     let room;
     if (typeof match[2] !== "undefined") {
-        if (!isSuperAdmin(msg.sender, extra)) {
+        if (!utils.isSuperAdmin(msg.sender, extra)) {
             return true;
         }
         room = "*";
@@ -81,7 +75,7 @@ async function tryEnabledStatus(client, msg, extra) {
     }
     let response = "";
     let status = await settings.getSettings();
-    if (isSuperAdmin(msg.sender, extra)) {
+    if (utils.isSuperAdmin(msg.sender, extra)) {
         // For the super admin, include information about all the rooms.
         for (const roomId in status) {
             let roomText;
@@ -128,7 +122,7 @@ async function trySet(client, msg, extra) {
     }
     let roomId, whichRoom;
     if (typeof match[1] !== "undefined") {
-        if (!isSuperAdmin(msg.sender, extra)) {
+        if (!utils.isSuperAdmin(msg.sender, extra)) {
             return true;
         }
         roomId = "*";
@@ -155,7 +149,7 @@ async function tryGet(client, msg, extra) {
     }
     let roomId, whichRoom;
     if (typeof match[1] !== "undefined") {
-        if (!isSuperAdmin(msg.sender, extra)) {
+        if (!utils.isSuperAdmin(msg.sender, extra)) {
             return true;
         }
         roomId = "*";
@@ -179,7 +173,7 @@ async function handler(client, msg, extra) {
     if (!msg.body.startsWith("!admin")) {
         return;
     }
-    if (!(await isAdmin(client, msg.room, msg.sender, extra))) {
+    if (!(await utils.isAdmin(client, msg.room, msg.sender, extra))) {
         return;
     }
     if (await tryEnable(client, msg, extra)) {

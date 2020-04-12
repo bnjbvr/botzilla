@@ -72,11 +72,18 @@ async function sendSeen(client, msg) {
     return sendReaction(client, msg, "👀");
 }
 exports.sendSeen = sendSeen;
-async function isAdmin(client, roomId, userId) {
+async function isMatrixAdmin(client, roomId, userId) {
     let powerLevels = await client.getRoomStateEvent(roomId, "m.room.power_levels", "");
     return (typeof powerLevels.users !== "undefined" &&
         typeof powerLevels.users[userId] === "number" &&
         powerLevels.users[userId] >= 50);
+}
+function isSuperAdmin(userId, extra) {
+    return extra.owner === userId;
+}
+exports.isSuperAdmin = isSuperAdmin;
+async function isAdmin(client, roomId, userId, extra) {
+    return (isSuperAdmin(userId, extra) || (await isMatrixAdmin(client, roomId, userId)));
 }
 exports.isAdmin = isAdmin;
 class Cooldown {

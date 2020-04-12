@@ -78,7 +78,7 @@ export async function sendSeen(client: MatrixClient, msg) {
   return sendReaction(client, msg, "👀");
 }
 
-export async function isAdmin(
+async function isMatrixAdmin(
   client: MatrixClient,
   roomId: string,
   userId: string
@@ -92,6 +92,21 @@ export async function isAdmin(
     typeof powerLevels.users !== "undefined" &&
     typeof powerLevels.users[userId] === "number" &&
     powerLevels.users[userId] >= 50
+  );
+}
+
+export function isSuperAdmin(userId, extra) {
+  return extra.owner === userId;
+}
+
+export async function isAdmin(
+  client: MatrixClient,
+  roomId: string,
+  userId: string,
+  extra
+): Promise<boolean> {
+  return (
+    isSuperAdmin(userId, extra) || (await isMatrixAdmin(client, roomId, userId))
   );
 }
 

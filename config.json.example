@@ -3,5 +3,11 @@
     "accessToken": "Your access token here. See https://t2bot.io/docs/access_tokens/ for details.",
     "owner": "@somebody:matrix.example.com",
     "logLevel": "warn",
-    "githubToken": "hunter2"
+    "githubToken": "hunter2",
+    "mastodon": {
+        "#alias:matrix.example.org": {
+            "baseUrl": "https://mastodon.example.org/",
+            "accessToken": "fewjilfelfwejilfwej423890fjkeowl43892"
+        },
+    }
 }

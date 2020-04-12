@@ -51,8 +51,8 @@ async function tryEmptyQueue(repo) {
     emptying = true;
     while (waitingUpdates.length) {
         let update = waitingUpdates.shift();
-        utils.assert(typeof update !== 'undefined', "length is nonzero");
-        if (!await sendOneUpdate(repo, update)) {
+        utils.assert(typeof update !== "undefined", "length is nonzero");
+        if (!(await sendOneUpdate(repo, update))) {
             break;
         }
     }
@@ -92,7 +92,9 @@ async function handler(client, msg, extra) {
     let newLine = `${now} ${roomAlias} ${confession}`;
     let commitMessage = `update from ${from}`;
     let done = await sendOneUpdate(repo, {
-        path, newLine, commitMessage
+        path,
+        newLine,
+        commitMessage
     });
     if (done) {
         await utils.sendSeen(client, msg);
