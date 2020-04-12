@@ -1,5 +1,5 @@
 // Provides random uuids.
-let uuid = require("uuid/v4");
+import * as uuid from "uuid/v4";
 
 module.exports = {
   handler: async function pun(client, msg) {

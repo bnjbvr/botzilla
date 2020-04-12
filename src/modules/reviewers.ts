@@ -2,7 +2,7 @@
 //
 // This communicates with hg.m.o to get the log.
 
-const { requestJson } = require("../utils");
+import { requestJson } from "../utils";
 
 const SEARCH_FOX_QUERY =
   "https://searchfox.org/mozilla-central/search?q=&path=**/{{FILENAME}}";
@@ -15,7 +15,9 @@ async function getReviewers(path) {
   const url = `${JSON_URL}${path}`;
   const log = await requestJson(url);
 
-  const reviewers = {};
+  const reviewers: {
+    [reviewer: string]: number;
+  } = {};
   for (const item of log.entries) {
     const m = item.desc.match(REVIEWER_REGEXP);
     if (!m) {

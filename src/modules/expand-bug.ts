@@ -6,7 +6,7 @@
 // settings, users' settings, etc. and it's not possible to do something wise
 // for all the possible different configurations.
 
-const utils = require("../utils");
+import * as utils from "../utils";
 
 const BUG_NUMBER_REGEXP = /[Bb]ug (\d+)/g;
 
@@ -59,7 +59,7 @@ async function expandBugNumber(client, msg) {
     cooldowns[key].onNewMessage(msg.room);
   }
 
-  var matches = null;
+  let matches: RegExpExecArray | null = null;
   while ((matches = BUG_NUMBER_REGEXP.exec(msg.body)) !== null) {
     await handleBug(client, msg.room, matches[1]);
   }

@@ -1,6 +1,6 @@
-let { request } = require("../utils");
-let settings = require("../settings");
-let _ = require("../html");
+import { request } from "../utils";
+import * as settings from "../settings";
+import * as _ from "../html";
 
 const ISSUE_OR_MR_REGEXP = /(#|!)(\d+)/g;
 
@@ -74,7 +74,7 @@ async function expandGitlab(client, msg) {
   let user = split.pop();
   let baseUrl = split.join("/");
 
-  var matches = null;
+  var matches: RegExpExecArray | null = null;
   while ((matches = ISSUE_OR_MR_REGEXP.exec(msg.body)) !== null) {
     await handleIssueOrMr(
       client,

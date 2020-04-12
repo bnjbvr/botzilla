@@ -1,8 +1,27 @@
-const github = require("octonode");
-const settings = require("../settings");
-const utils = require("../utils");
+import * as github from "octonode";
+import * as settings from "../settings";
+import * as utils from "../utils";
 
-let GITHUB_CLIENT = null;
+interface GithubRepo {
+  contentsAsync(path: string): Promise<{ sha: string; content: string }[]>;
+  updateContentsAsync(
+    path: string,
+    commitMessage: string,
+    content: string,
+    sha: string
+  ): Promise<void>;
+  createContentsAsync(
+    path: string,
+    commitMessage: string,
+    content: string
+  ): Promise<void>;
+}
+
+interface GithubClient {
+  repo(name: string): GithubRepo;
+}
+
+let GITHUB_CLIENT: GithubClient | null = null;
 
 async function init(config) {
   GITHUB_CLIENT = github.client(config.githubToken);
@@ -17,7 +36,7 @@ const COOLDOWN_NUM_MESSAGES = 20;
 let cooldown = new utils.Cooldown(COOLDOWN_TIMEOUT, COOLDOWN_NUM_MESSAGES);
 
 async function handler(client, msg, extra) {
-  if (!GITHUB_CLIENT) {
+  if (GITHUB_CLIENT === null) {
     return;
   }
 
@@ -39,6 +58,7 @@ async function handler(client, msg, extra) {
     return;
   }
 
+  utils.assert(GITHUB_CLIENT !== null, "guarded by if at top of func");
   let repo = GITHUB_CLIENT.repo(userRepo);
 
   let now = (Date.now() / 1000) | 0; // for ye ol' asm.js days.
@@ -55,7 +75,7 @@ async function handler(client, msg, extra) {
     roomAlias = "confession";
   }
 
-  let path = PATH.replace(/\{USER\}/g, from).replace("{ERA}", era);
+  let path = PATH.replace(/\{USER\}/g, from).replace("{ERA}", era.toString());
   let newLine = `${now} ${roomAlias} ${confession}`;
   let commitMessage = `update from ${from}`;
 

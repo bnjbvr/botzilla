@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "pretty": "npx prettier \"./src/**/*\" --write",
-    "start": "node ./src/index"
+    "build": "tsc",
+    "dev": "tsc -w --incremental --preserveWatchOutput",
+    "start": "node ./build/index"
   },
   "repository": {
     "type": "git",
@@ -26,6 +28,7 @@
     "uuid": "^3.3.3"
   },
   "devDependencies": {
-    "prettier": "^1.19.1"
+    "prettier": "^1.19.1",
+    "typescript": "^3.8.3"
   }
 }

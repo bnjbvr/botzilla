@@ -1,8 +1,21 @@
-let db = require("./db");
+import * as db from "./db";
+import { assert } from "./utils";
 
-let SETTINGS = null;
+interface SettingEntry {
+  enabled: boolean;
+  options: object;
+}
+
+type Settings = {
+  [roomId: string]: {
+    [moduleName: string]: SettingEntry;
+  };
+};
+
+let SETTINGS: Settings | null = null;
 
 function ensureCacheEntry(matrixRoomId, moduleName) {
+  assert(SETTINGS !== null, "settings should have been defined first");
   SETTINGS[matrixRoomId] = SETTINGS[matrixRoomId] || {};
   SETTINGS[matrixRoomId][moduleName] = SETTINGS[matrixRoomId][moduleName] || {};
   return SETTINGS[matrixRoomId][moduleName];
@@ -20,20 +33,21 @@ async function forceReloadSettings() {
   }
 }
 
-async function getSettings() {
+export async function getSettings(): Promise<Settings> {
   if (SETTINGS === null) {
     await forceReloadSettings();
   }
+  assert(SETTINGS !== null, "settings should have been loaded");
   return SETTINGS;
 }
 
-async function enableModule(matrixRoomId, moduleName, enabled) {
+export async function enableModule(matrixRoomId, moduleName, enabled) {
   let entry = ensureCacheEntry(matrixRoomId, moduleName);
   entry.enabled = enabled;
   await db.upsertModuleSettingEnabled(matrixRoomId, moduleName, enabled);
 }
 
-async function getOption(matrixRoomId, moduleName, key) {
+export async function getOption(matrixRoomId, moduleName, key) {
   await getSettings();
 
   // Prefer the room option if there's one, otherwise return the general value.
@@ -60,7 +74,7 @@ async function getOption(matrixRoomId, moduleName, key) {
   return allValue;
 }
 
-async function setOption(matrixRoomId, moduleName, key, value) {
+export async function setOption(matrixRoomId, moduleName, key, value) {
   await getSettings();
   let entry = ensureCacheEntry(matrixRoomId, moduleName);
   entry.options = entry.options || {};
@@ -68,7 +82,7 @@ async function setOption(matrixRoomId, moduleName, key, value) {
   await db.upsertModuleSettingOptions(matrixRoomId, moduleName, entry.options);
 }
 
-async function isModuleEnabled(matrixRoomId, moduleName) {
+export async function isModuleEnabled(matrixRoomId, moduleName) {
   await getSettings();
 
   // Favor per room preferences over general preferences.
@@ -80,11 +94,3 @@ async function isModuleEnabled(matrixRoomId, moduleName) {
   entry = ensureCacheEntry("*", moduleName);
   return !!entry.enabled;
 }
-
-module.exports = {
-  getSettings,
-  enableModule,
-  isModuleEnabled,
-  getOption,
-  setOption
-};

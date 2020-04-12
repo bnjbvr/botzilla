@@ -1,16 +1,16 @@
-let sqlite = require("sqlite");
-let path = require("path");
+import * as sqlite from "sqlite";
+import * as path from "path";
 
 let db;
 
-async function init(storageDir) {
+export async function init(storageDir) {
   let dbPath = path.join(storageDir, "db.sqlite");
-  db = await sqlite.open(dbPath, { Promise, verbose: true });
+  db = await sqlite.open(dbPath, { promise: Promise, verbose: true });
   db.on("trace", event => console.log(event));
   await db.migrate();
 }
 
-async function upsertModuleSettingEnabled(roomId, moduleName, enabled) {
+export async function upsertModuleSettingEnabled(roomId, moduleName, enabled) {
   let former = await db.get(
     "SELECT id FROM ModuleSetting WHERE matrixRoomId = ? AND moduleName = ?",
     roomId,
@@ -32,7 +32,7 @@ async function upsertModuleSettingEnabled(roomId, moduleName, enabled) {
   }
 }
 
-async function upsertModuleSettingOptions(roomId, moduleName, options) {
+export async function upsertModuleSettingOptions(roomId, moduleName, options) {
   let stringified = JSON.stringify(options);
   let former = await db.get(
     "SELECT id FROM ModuleSetting WHERE matrixRoomId = ? AND moduleName = ?",
@@ -56,16 +56,9 @@ async function upsertModuleSettingOptions(roomId, moduleName, options) {
   }
 }
 
-async function getModuleSettings() {
+export async function getModuleSettings() {
   let results = await db.all(
     "SELECT moduleName, matrixRoomId, enabled, options FROM ModuleSetting;"
   );
   return results;
 }
-
-module.exports = {
-  init,
-  upsertModuleSettingEnabled,
-  upsertModuleSettingOptions,
-  getModuleSettings
-};

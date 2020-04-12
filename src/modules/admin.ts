@@ -1,5 +1,5 @@
-const settings = require("../settings");
-const utils = require("../utils");
+import * as settings from "../settings";
+import * as utils from "../utils";
 
 // All the admin commands must start with !admin.
 
@@ -93,9 +93,9 @@ async function tryEnabledStatus(client, msg, extra) {
     if (!enabledModules.length) {
       continue;
     }
-    enabledModules = enabledModules.join(", ");
+    let enabledModulesString = enabledModules.join(", ");
 
-    response += `${roomText}: ${enabledModules}\n`;
+    response += `${roomText}: ${enabledModulesString}\n`;
   }
 
   if (!response.length) {

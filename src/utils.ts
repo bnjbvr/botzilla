@@ -1,21 +1,27 @@
-let { promisify } = require("util");
-let request = require("request");
+import { promisify } from "util";
+import requestModule from "request";
 
-const promiseRequest = promisify(request);
+export function assert(test: boolean, msg: string): asserts test {
+  if (!test) {
+    throw new Error("assertion error: " + msg);
+  }
+}
 
-async function requestJson(url) {
+export const request = promisify(requestModule);
+
+export async function requestJson(url) {
   let options = {
     uri: url,
     headers: {
       accept: "application/json"
     }
   };
-  let response = await promiseRequest(options);
+  let response = await request(options);
   return JSON.parse(response.body);
 }
 
 let aliasCache = {};
-async function getRoomAlias(client, roomId) {
+export async function getRoomAlias(client, roomId) {
   // TODO make this a service accessible to all the modules. This finds
   // possible aliases for a given roomId.
   let roomAlias = aliasCache[roomId];
@@ -43,7 +49,7 @@ async function getRoomAlias(client, roomId) {
 }
 
 let reactionId = 0;
-async function sendReaction(client, msg, emoji = "👀") {
+export async function sendReaction(client, msg, emoji = "👀") {
   let encodedRoomId = encodeURIComponent(msg.room);
 
   let body = {
@@ -64,14 +70,23 @@ async function sendReaction(client, msg, emoji = "👀") {
   );
 }
 
-async function sendThumbsUp(client, msg) {
+export async function sendThumbsUp(client, msg) {
   return sendReaction(client, msg, "👍️");
 }
-async function sendSeen(client, msg) {
+export async function sendSeen(client, msg) {
   return sendReaction(client, msg, "👀");
 }
 
-class Cooldown {
+interface CooldownEntry {
+  timer: NodeJS.Timeout | null;
+  numMessages: number;
+}
+
+export class Cooldown {
+  timeout: number;
+  numMessages: number;
+  map: { [roomId: string]: CooldownEntry };
+
   constructor(timeout, numMessages) {
     this.timeout = timeout;
     this.numMessages = numMessages;
@@ -117,13 +132,3 @@ class Cooldown {
     return entry.timer === null && entry.numMessages === 0;
   }
 }
-
-module.exports = {
-  request: promiseRequest,
-  requestJson,
-  getRoomAlias,
-  sendReaction,
-  sendThumbsUp,
-  sendSeen,
-  Cooldown
-};

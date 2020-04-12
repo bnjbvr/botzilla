@@ -14,12 +14,11 @@ function helper(tag) {
   };
 }
 
-const ELEMENTS = ["p", "ul", "li", "strong", "a"];
-
-module.exports = {};
-for (const el of ELEMENTS) {
-  module.exports[el] = helper(el);
-}
+export const p = helper("p");
+export const ul = helper("ul");
+export const li = helper("li");
+export const strong = helper("strong");
+export const a = helper("a");
 
 if (module.parent === null) {
   // Tests.

@@ -2,7 +2,7 @@
 // TODO probably better to pick a set of puns instead of relying on the
 // external website, to avoid offensive content.
 
-let { requestJson } = require("../utils");
+import { requestJson } from "../utils";
 
 const URL = "https://icanhazdadjoke.com/";
 

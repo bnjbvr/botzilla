@@ -1,7 +1,7 @@
 // This bot fetches quotes from the @horsejs twitter account, and reads them
 // out loud. It's unsafe.
 
-let { requestJson } = require("../utils");
+import { assert, requestJson } from "../utils";
 
 // Constants.
 var KNOWN_FRAMEWORKS = [
@@ -44,7 +44,7 @@ var PRE_LOADED_TWEETS = 10;
 const URL = "http://javascript.horse/random.json";
 
 // Global values
-var TWEETS = [];
+var TWEETS: string[] = [];
 
 var KEYWORD_MAP = {};
 
@@ -60,8 +60,8 @@ function maybeCacheTweet(tweet) {
   }
 }
 
-async function getTweet() {
-  let result = null;
+async function getTweet(): Promise<string> {
+  let result: string | undefined | null = null;
   if (TWEETS.length) {
     result = TWEETS.pop();
   }
@@ -73,6 +73,8 @@ async function getTweet() {
   } else {
     result = tweet;
   }
+
+  assert(typeof result === "string", "string resolved at this point");
   return result;
 }
 
@@ -86,7 +88,7 @@ async function onLoad() {
   KNOWN_KEYWORDS = KNOWN_KEYWORDS.concat(KNOWN_FRAMEWORKS);
 
   // Preload a few tweets.
-  var promises = [];
+  var promises: Promise<string>[] = [];
   for (var i = 0; i < PRE_LOADED_TWEETS; i++) {
     promises.push(getTweet());
   }

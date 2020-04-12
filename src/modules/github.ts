@@ -1,6 +1,6 @@
-let { request } = require("../utils");
-let settings = require("../settings");
-let _ = require("../html");
+import { request } from "../utils";
+import * as settings from "../settings";
+import * as _ from "../html";
 
 const ISSUE_OR_PR_REGEXP = /#(\d+)/g;
 
@@ -47,7 +47,7 @@ async function expandGithub(client, msg) {
     return;
   }
 
-  var matches = null;
+  var matches: RegExpExecArray | null = null;
   while ((matches = ISSUE_OR_PR_REGEXP.exec(msg.body)) !== null) {
     await handleIssueOrPr(client, repo, msg.room, matches[1]);
   }

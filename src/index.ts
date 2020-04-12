@@ -1,28 +1,33 @@
-let {
+import {
   MatrixClient,
   SimpleFsStorageProvider,
   AutojoinRoomsMixin,
   RichReply,
   LogService,
   LogLevel
-} = require("matrix-bot-sdk");
+} from "matrix-bot-sdk";
 
-let fs = require("fs");
-let path = require("path");
+import * as fs from "fs";
+import * as path from "path";
+import * as util from "util";
 
-let util = require("util");
+import * as settings from "./settings";
+
 let fsReadDir = util.promisify(fs.readdir);
 
-let settings = require("./settings");
-
 // A place where to store the client, for cleanup purposes.
-let CLIENT = null;
+let CLIENT: MatrixClient | null = null;
+
+interface Handler {
+  moduleName: string;
+  handler: () => any;
+}
 
 async function loadConfig(fileName) {
-  let config = JSON.parse(fs.readFileSync(fileName));
+  let config = JSON.parse(fs.readFileSync(fileName).toString());
 
-  const handlers = [];
-  const handlerNames = [];
+  const handlers: Handler[] = [];
+  const handlerNames: string[] = [];
   const helpMessages = {};
 
   let moduleNames = await fsReadDir(path.join(__dirname, "modules"));
@@ -248,11 +253,11 @@ async function exitHandler(options = {}) {
   await _client.setPresenceStatus("offline", "bot exited");
 
   while (true) {
-    let state = await _client.getPresenceStatus();
-    if (state.presence !== "online") {
+    let presence = (await _client.getPresenceStatus()).state;
+    if (presence !== "online") {
       break;
     }
-    console.log("waiting, status is", state.presence);
+    console.log("waiting, status is", presence);
     await wait(11000);
   }
   console.log("Done, ciao!");

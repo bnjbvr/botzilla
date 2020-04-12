@@ -1,4 +1,4 @@
-let _ = require("../html");
+import * as _ from "../html";
 
 const MATCH_REGEXP = /!help ?([a-zA-Z-]+)?/g;
 
