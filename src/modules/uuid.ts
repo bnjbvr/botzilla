@@ -1,8 +1,8 @@
 // Provides random uuids.
-import * as uuid from "uuid/v4";
+import uuid from "uuid/v4";
 
 module.exports = {
-  handler: async function pun(client, msg) {
+  handler: async function uuidHandler(client, msg) {
     if (msg.body.indexOf("!uuid") === -1) {
       return;
     }
