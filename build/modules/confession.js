@@ -19,6 +19,45 @@ const CONFESSION_REGEXP = /^confession:(.*)/gs;
 const COOLDOWN_TIMEOUT = 1000 * 60 * 60; // every 10 minutes
 const COOLDOWN_NUM_MESSAGES = 20;
 let cooldown = new utils.Cooldown(COOLDOWN_TIMEOUT, COOLDOWN_NUM_MESSAGES);
+let waitingUpdates = [];
+let emptying = false;
+async function sendOneUpdate(repo, update) {
+    let { commitMessage, path, newLine } = update;
+    try {
+        let resp = await repo.contentsAsync(path);
+        let sha = resp[0].sha;
+        let content = Buffer.from(resp[0].content, "base64").toString();
+        content += `\n${newLine}`;
+        await repo.updateContentsAsync(path, commitMessage, content, sha);
+        return true;
+    }
+    catch (err) {
+        if (err.statusCode && err.statusCode === 404) {
+            // Create the file.
+            await repo.createContentsAsync(path, commitMessage, newLine);
+            return true;
+        }
+        else {
+            // Add the confession to the queue and try sending the update later.
+            waitingUpdates.push(update);
+            return false;
+        }
+    }
+}
+async function tryEmptyQueue(repo) {
+    if (emptying || waitingUpdates.length === 0) {
+        return;
+    }
+    emptying = true;
+    while (waitingUpdates.length) {
+        let update = waitingUpdates.shift();
+        utils.assert(typeof update !== 'undefined', "length is nonzero");
+        if (!await sendOneUpdate(repo, update)) {
+            break;
+        }
+    }
+    emptying = false;
+}
 async function handler(client, msg, extra) {
     if (GITHUB_CLIENT === null) {
         return;
@@ -27,6 +66,8 @@ async function handler(client, msg, extra) {
     if (!userRepo) {
         return;
     }
+    let repo = GITHUB_CLIENT.repo(userRepo);
+    await tryEmptyQueue(repo);
     cooldown.onNewMessage(msg.room);
     CONFESSION_REGEXP.lastIndex = 0;
     let match = CONFESSION_REGEXP.exec(msg.body);
@@ -37,8 +78,6 @@ async function handler(client, msg, extra) {
     if (!confession.length) {
         return;
     }
-    utils.assert(GITHUB_CLIENT !== null, "guarded by if at top of func");
-    let repo = GITHUB_CLIENT.repo(userRepo);
     let now = (Date.now() / 1000) | 0; // for ye ol' asm.js days.
     // Find the million second period (~1.5 weeks) containing this timestamp.
     let era = now - (now % 1000000);
@@ -52,25 +91,9 @@ async function handler(client, msg, extra) {
     let path = PATH.replace(/\{USER\}/g, from).replace("{ERA}", era.toString());
     let newLine = `${now} ${roomAlias} ${confession}`;
     let commitMessage = `update from ${from}`;
-    let done = false;
-    try {
-        let resp = await repo.contentsAsync(path);
-        let sha = resp[0].sha;
-        let content = Buffer.from(resp[0].content, "base64").toString();
-        content += `\n${newLine}`;
-        await repo.updateContentsAsync(path, commitMessage, content, sha);
-        done = true;
-    }
-    catch (err) {
-        if (err.statusCode && err.statusCode === 404) {
-            // Create the file.
-            await repo.createContentsAsync(path, commitMessage, newLine);
-            done = true;
-        }
-        else {
-            throw err;
-        }
-    }
+    let done = await sendOneUpdate(repo, {
+        path, newLine, commitMessage
+    });
     if (done) {
         await utils.sendSeen(client, msg);
         if (cooldown.check(msg.room)) {
