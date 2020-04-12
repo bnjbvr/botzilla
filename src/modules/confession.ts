@@ -113,7 +113,7 @@ async function handler(client, msg, extra) {
     return;
   }
 
-  confession = confession.replace(/(?:\r\n|\r|\n)/g, '\\n');
+  confession = confession.replace(/(?:\r\n|\r|\n)/g, "\\n");
 
   let now = (Date.now() / 1000) | 0; // for ye ol' asm.js days.
 

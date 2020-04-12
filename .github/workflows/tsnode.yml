@@ -26,7 +26,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: npm install
       name: Install dependencies
-    - run: npx --no-install prettier --check ./src/**/*.ts
-      name: Check Prettier has been run
     - run: npm run build
       name: Build TypeScript code
+    - run: npx --no-install prettier --check ./src/**/*.ts
+      name: Check Prettier has been run
