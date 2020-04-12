@@ -19,6 +19,8 @@ let fsReadDir = util.promisify(fs.readdir);
 // A place where to store the client, for cleanup purposes.
 let CLIENT: MatrixClient | null = null;
 
+let roomJoinedAt: { [roomId: string]: number } = {};
+
 interface Handler {
   moduleName: string;
   handler: () => any;
@@ -71,8 +73,15 @@ function makeHandleCommand(client, config) {
       return;
     }
 
-    // Ignore messages published before we started.
-    if (parseInt(event.origin_server_ts) < startTime) {
+    // Ignore messages published before we started or joined the room.
+    let eventTime = parseInt(event.origin_server_ts);
+    if (eventTime < startTime) {
+      return;
+    }
+    if (
+      typeof roomJoinedAt[room] === "number" &&
+      eventTime < roomJoinedAt[room]
+    ) {
       return;
     }
 
@@ -185,6 +194,11 @@ async function createClient(configFilename) {
     storage
   );
   AutojoinRoomsMixin.setupOnClient(client);
+
+  client.on("room.join", (roomId: string) => {
+    roomJoinedAt[roomId] = Date.now();
+    console.log("joined room", roomId, "at", roomJoinedAt[roomId]);
+  });
 
   // We also want to make sure we can receive events - this is where we will
   // handle our command.

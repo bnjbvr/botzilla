@@ -15,6 +15,7 @@ const settings = __importStar(require("./settings"));
 let fsReadDir = util.promisify(fs.readdir);
 // A place where to store the client, for cleanup purposes.
 let CLIENT = null;
+let roomJoinedAt = {};
 async function loadConfig(fileName) {
     let config = JSON.parse(fs.readFileSync(fileName).toString());
     const handlers = [];
@@ -55,8 +56,13 @@ function makeHandleCommand(client, config) {
         if (!content) {
             return;
         }
-        // Ignore messages published before we started.
-        if (parseInt(event.origin_server_ts) < startTime) {
+        // Ignore messages published before we started or joined the room.
+        let eventTime = parseInt(event.origin_server_ts);
+        if (eventTime < startTime) {
+            return;
+        }
+        if (typeof roomJoinedAt[room] === "number" &&
+            eventTime < roomJoinedAt[room]) {
             return;
         }
         // Don't handle non-text events
@@ -146,6 +152,10 @@ async function createClient(configFilename) {
     // Now we can create the client and set it up to automatically join rooms.
     const client = new matrix_bot_sdk_1.MatrixClient(config.homeserverUrl, config.accessToken, storage);
     matrix_bot_sdk_1.AutojoinRoomsMixin.setupOnClient(client);
+    client.on("room.join", (roomId) => {
+        roomJoinedAt[roomId] = Date.now();
+        console.log("joined room", roomId, "at", roomJoinedAt[roomId]);
+    });
     // We also want to make sure we can receive events - this is where we will
     // handle our command.
     client.on("room.message", makeHandleCommand(client, config));
