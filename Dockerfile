@@ -7,6 +7,7 @@ RUN apt-get update \
 
 COPY ./src /app/src
 COPY ./migrations /app/migrations
+COPY ./build /app/build
 COPY package.json /app/package.json
 
 WORKDIR /app
