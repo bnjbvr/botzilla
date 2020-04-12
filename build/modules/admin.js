@@ -193,8 +193,9 @@ async function handler(client, msg, extra) {
     }
     client.sendText(msg.room, "unknown admin command; possible commands are: 'enable|disable|enable-all|disable-all|list|status|set|get.'");
 }
-module.exports = {
+const AdminModule = {
     handler,
     help: `Helps administrator configure the current Botzilla instance.
     Possible commands are: enable (module)|disable (module)|enable-all (module)|disable-all (module)|list|status|set|get`
 };
+module.exports = AdminModule;

@@ -12,6 +12,7 @@ import * as path from "path";
 import * as util from "util";
 
 import * as settings from "./settings";
+import { Message } from "./utils";
 
 let fsReadDir = util.promisify(fs.readdir);
 
@@ -111,7 +112,7 @@ function makeHandleCommand(client, config) {
       return;
     }
 
-    let msg = {
+    let msg: Message = {
       body,
       sender,
       room,

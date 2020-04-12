@@ -1,5 +1,6 @@
 import * as settings from "../settings";
 import * as utils from "../utils";
+import { ModuleHandler } from "../utils";
 import { MatrixClient } from "matrix-bot-sdk";
 
 // All the admin commands must start with !admin.
@@ -14,7 +15,7 @@ function moduleExists(moduleName, extra) {
   return extra.handlerNames.indexOf(moduleName) !== -1;
 }
 
-async function tryEnable(client, msg, extra) {
+async function tryEnable(client: MatrixClient, msg: utils.Message, extra) {
   ENABLE_REGEXP.lastIndex = 0;
 
   let match = ENABLE_REGEXP.exec(msg.body);
@@ -45,7 +46,7 @@ async function tryEnable(client, msg, extra) {
   return true;
 }
 
-async function tryList(client, msg, extra) {
+async function tryList(client: MatrixClient, msg: utils.Message, extra) {
   if (msg.body.trim() !== "!admin list") {
     return false;
   }
@@ -75,7 +76,11 @@ function enabledModulesInRoom(status, roomId): string | null {
   return enabledModulesString;
 }
 
-async function tryEnabledStatus(client, msg, extra) {
+async function tryEnabledStatus(
+  client: MatrixClient,
+  msg: utils.Message,
+  extra
+) {
   if (msg.body.trim() !== "!admin status") {
     return false;
   }
@@ -126,7 +131,7 @@ async function tryEnabledStatus(client, msg, extra) {
   return true;
 }
 
-async function trySet(client, msg, extra) {
+async function trySet(client: MatrixClient, msg: utils.Message, extra) {
   SET_REGEXP.lastIndex = 0;
 
   let match = SET_REGEXP.exec(msg.body);
@@ -158,7 +163,7 @@ async function trySet(client, msg, extra) {
   return true;
 }
 
-async function tryGet(client, msg, extra) {
+async function tryGet(client: MatrixClient, msg: utils.Message, extra) {
   GET_REGEXP.lastIndex = 0;
 
   let match = GET_REGEXP.exec(msg.body);
@@ -190,7 +195,11 @@ async function tryGet(client, msg, extra) {
   return true;
 }
 
-async function handler(client, msg, extra) {
+async function handler(
+  client: MatrixClient,
+  msg: utils.Message,
+  extra: object
+) {
   if (!msg.body.startsWith("!admin")) {
     return;
   }
@@ -218,8 +227,10 @@ async function handler(client, msg, extra) {
   );
 }
 
-module.exports = {
+const AdminModule: ModuleHandler = {
   handler,
   help: `Helps administrator configure the current Botzilla instance.
     Possible commands are: enable (module)|disable (module)|enable-all (module)|disable-all (module)|list|status|set|get`
 };
+
+module.exports = AdminModule;

@@ -2,6 +2,25 @@ import { promisify } from "util";
 import requestModule from "request";
 import { MatrixClient } from "matrix-bot-sdk";
 
+export interface Message {
+  body: string;
+  sender: string;
+  room: string;
+  event: object;
+}
+
+export interface ModuleHandler {
+  // The function that's called when a message is received.
+  handler: (client: MatrixClient, msg: Message, extra: object) => void;
+
+  // An help message for the given module.
+  help: string;
+
+  // An initialization function that's passed the content of the config.json
+  // file.
+  init?: (config: object) => void;
+}
+
 export function assert(test: boolean, msg: string): asserts test {
   if (!test) {
     throw new Error("assertion error: " + msg);
