@@ -78,6 +78,7 @@ async function handler(client, msg, extra) {
     if (!confession.length) {
         return;
     }
+    confession = confession.replace(/(?:\r\n|\r|\n)/g, '\\n');
     let now = (Date.now() / 1000) | 0; // for ye ol' asm.js days.
     // Find the million second period (~1.5 weeks) containing this timestamp.
     let era = now - (now % 1000000);
