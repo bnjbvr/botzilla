@@ -42,6 +42,7 @@ export async function getSettings(): Promise<Settings> {
 }
 
 export async function enableModule(matrixRoomId, moduleName, enabled) {
+  await getSettings();
   let entry = ensureCacheEntry(matrixRoomId, moduleName);
   entry.enabled = enabled;
   await db.upsertModuleSettingEnabled(matrixRoomId, moduleName, enabled);

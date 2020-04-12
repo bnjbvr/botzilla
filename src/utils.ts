@@ -1,5 +1,6 @@
 import { promisify } from "util";
 import requestModule from "request";
+import { MatrixClient } from "matrix-bot-sdk";
 
 export function assert(test: boolean, msg: string): asserts test {
   if (!test) {
@@ -21,7 +22,7 @@ export async function requestJson(url) {
 }
 
 let aliasCache = {};
-export async function getRoomAlias(client, roomId) {
+export async function getRoomAlias(client: MatrixClient, roomId) {
   // TODO make this a service accessible to all the modules. This finds
   // possible aliases for a given roomId.
   let roomAlias = aliasCache[roomId];
@@ -49,7 +50,7 @@ export async function getRoomAlias(client, roomId) {
 }
 
 let reactionId = 0;
-export async function sendReaction(client, msg, emoji = "👀") {
+export async function sendReaction(client: MatrixClient, msg, emoji = "👀") {
   let encodedRoomId = encodeURIComponent(msg.room);
 
   let body = {
@@ -70,11 +71,28 @@ export async function sendReaction(client, msg, emoji = "👀") {
   );
 }
 
-export async function sendThumbsUp(client, msg) {
+export async function sendThumbsUp(client: MatrixClient, msg) {
   return sendReaction(client, msg, "👍️");
 }
-export async function sendSeen(client, msg) {
+export async function sendSeen(client: MatrixClient, msg) {
   return sendReaction(client, msg, "👀");
+}
+
+export async function isAdmin(
+  client: MatrixClient,
+  roomId: string,
+  userId: string
+): Promise<boolean> {
+  let powerLevels = await client.getRoomStateEvent(
+    roomId,
+    "m.room.power_levels",
+    ""
+  );
+  return (
+    typeof powerLevels.users !== "undefined" &&
+    typeof powerLevels.users[userId] === "number" &&
+    powerLevels.users[userId] >= 50
+  );
 }
 
 interface CooldownEntry {

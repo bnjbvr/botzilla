@@ -1,34 +1,54 @@
 import * as settings from "../settings";
 import * as utils from "../utils";
+import { MatrixClient } from "matrix-bot-sdk";
 
 // All the admin commands must start with !admin.
-
-const ENABLE_REGEXP = /!admin (enable|disable) ([a-zA-Z-]+)/g;
-const ENABLE_ALL_REGEXP = /!admin (enable|disable)-all ([a-zA-Z-]+)/g;
+const ENABLE_REGEXP = /!admin (enable|disable)(-all)? ([a-zA-Z-]+)/g;
 
 // set MODULE_NAME KEY VALUE
 const SET_REGEXP = /!admin set(-all)? ([a-zA-Z-]+) ([a-zA-Z-_]+) (.*)/g;
+// get MODULE_NAME KEY
 const GET_REGEXP = /!admin get(-all)? ([a-zA-Z-]+) ([a-zA-Z-_]+)/g;
 
-async function isAdmin(from, extra) {
-  // At the moment, do something simple.
-  return extra.owner === from;
+function isSuperAdmin(userId, extra) {
+  return extra.owner === userId;
+}
+
+async function isAdmin(
+  client: MatrixClient,
+  roomId: string,
+  userId,
+  extra
+): Promise<boolean> {
+  return (
+    isSuperAdmin(userId, extra) || (await utils.isAdmin(client, roomId, userId))
+  );
 }
 
 function moduleExists(moduleName, extra) {
   return extra.handlerNames.indexOf(moduleName) !== -1;
 }
 
-async function enableForRoom(client, regexp, msg, room, extra) {
-  regexp.lastIndex = 0;
+async function tryEnable(client, msg, extra) {
+  ENABLE_REGEXP.lastIndex = 0;
 
-  let match = regexp.exec(msg.body);
+  let match = ENABLE_REGEXP.exec(msg.body);
   if (match === null) {
     return false;
   }
 
+  let room;
+  if (typeof match[2] !== "undefined") {
+    if (!isSuperAdmin(msg.sender, extra)) {
+      return true;
+    }
+    room = "*";
+  } else {
+    room = msg.room;
+  }
+
   let enabled = match[1] === "enable";
-  let moduleName = match[2];
+  let moduleName = match[3];
 
   if (!moduleExists(moduleName, extra)) {
     client.sendText(msg.room, "Unknown module.");
@@ -40,14 +60,6 @@ async function enableForRoom(client, regexp, msg, room, extra) {
   return true;
 }
 
-async function tryEnable(client, msg, extra) {
-  return enableForRoom(client, ENABLE_REGEXP, msg, msg.room, extra);
-}
-
-async function tryEnableAll(client, msg, extra) {
-  return enableForRoom(client, ENABLE_ALL_REGEXP, msg, "*", extra);
-}
-
 async function tryList(client, msg, extra) {
   if (msg.body.trim() !== "!admin list") {
     return false;
@@ -55,6 +67,27 @@ async function tryList(client, msg, extra) {
   let response = extra.handlerNames.join(", ");
   client.sendText(msg.room, response);
   return true;
+}
+
+function enabledModulesInRoom(status, roomId): string | null {
+  let enabledModules = Object.keys(status[roomId])
+    .map(key => {
+      if (
+        typeof status[roomId] !== "undefined" &&
+        typeof status[roomId][key] === "object" &&
+        typeof status[roomId][key].enabled !== "undefined"
+      ) {
+        return status[roomId][key].enabled ? key : "!" + key;
+      }
+      return undefined;
+    })
+    .filter(x => x !== undefined);
+
+  if (!enabledModules.length) {
+    return null;
+  }
+  let enabledModulesString = enabledModules.join(", ");
+  return enabledModulesString;
 }
 
 async function tryEnabledStatus(client, msg, extra) {
@@ -66,36 +99,38 @@ async function tryEnabledStatus(client, msg, extra) {
 
   let status = await settings.getSettings();
 
-  for (const roomId in status) {
-    let roomText;
-    if (roomId === "*") {
-      roomText = "all";
-    } else {
-      roomText = await utils.getRoomAlias(client, roomId);
+  if (isSuperAdmin(msg.sender, extra)) {
+    // For the super admin, include information about all the rooms.
+    for (const roomId in status) {
+      let roomText;
+      if (roomId === "*") {
+        roomText = "all";
+      } else {
+        roomText = await utils.getRoomAlias(client, roomId);
+        if (!roomText) {
+          roomText = roomId;
+        }
+      }
+
+      let enabledModulesString = enabledModulesInRoom(status, roomId);
+      if (enabledModulesString === null) {
+        continue;
+      }
+      response += `${roomText}: ${enabledModulesString}\n`;
+    }
+  } else {
+    // Only include information about this room.
+    if (msg.room in status) {
+      let roomText = await utils.getRoomAlias(client, msg.room);
       if (!roomText) {
-        roomText = roomId;
+        roomText = msg.room;
+      }
+
+      let enabledModulesString = enabledModulesInRoom(status, msg.room);
+      if (enabledModulesString !== null) {
+        response += `${roomText}: ${enabledModulesString}\n`;
       }
     }
-
-    let enabledModules = Object.keys(status[roomId])
-      .map(key => {
-        if (
-          typeof status[roomId] !== "undefined" &&
-          typeof status[roomId][key] === "object" &&
-          typeof status[roomId][key].enabled !== "undefined"
-        ) {
-          return status[roomId][key].enabled ? key : "!" + key;
-        }
-        return undefined;
-      })
-      .filter(x => x !== undefined);
-
-    if (!enabledModules.length) {
-      continue;
-    }
-    let enabledModulesString = enabledModules.join(", ");
-
-    response += `${roomText}: ${enabledModulesString}\n`;
   }
 
   if (!response.length) {
@@ -116,6 +151,9 @@ async function trySet(client, msg, extra) {
 
   let roomId, whichRoom;
   if (typeof match[1] !== "undefined") {
+    if (!isSuperAdmin(msg.sender, extra)) {
+      return true;
+    }
     roomId = "*";
   } else {
     roomId = msg.room;
@@ -145,6 +183,9 @@ async function tryGet(client, msg, extra) {
 
   let roomId, whichRoom;
   if (typeof match[1] !== "undefined") {
+    if (!isSuperAdmin(msg.sender, extra)) {
+      return true;
+    }
     roomId = "*";
     whichRoom = "all the rooms";
   } else {
@@ -168,13 +209,10 @@ async function handler(client, msg, extra) {
   if (!msg.body.startsWith("!admin")) {
     return;
   }
-  if (!(await isAdmin(msg.sender, extra))) {
+  if (!(await isAdmin(client, msg.room, msg.sender, extra))) {
     return;
   }
   if (await tryEnable(client, msg, extra)) {
-    return;
-  }
-  if (await tryEnableAll(client, msg, extra)) {
     return;
   }
   if (await tryEnabledStatus(client, msg, extra)) {

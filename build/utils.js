@@ -72,6 +72,13 @@ async function sendSeen(client, msg) {
     return sendReaction(client, msg, "👀");
 }
 exports.sendSeen = sendSeen;
+async function isAdmin(client, roomId, userId) {
+    let powerLevels = await client.getRoomStateEvent(roomId, "m.room.power_levels", "");
+    return (typeof powerLevels.users !== "undefined" &&
+        typeof powerLevels.users[userId] === "number" &&
+        powerLevels.users[userId] >= 50);
+}
+exports.isAdmin = isAdmin;
 class Cooldown {
     constructor(timeout, numMessages) {
         this.timeout = timeout;
