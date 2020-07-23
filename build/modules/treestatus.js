@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const utils_1 = require("../utils");
 const URL = "https://treestatus.mozilla-releng.net/trees2";
-const MATCH_REGEXP = /!treestatus ?([a-zA-Z-]+)?/g;
+const MATCH_REGEXP = /!treestatus ?([a-zA-Z0-9-]+)?/g;
 function formatOne(treeInfo) {
     let reason = treeInfo.status !== "open" && treeInfo.reason && treeInfo.reason.length > 0
         ? ` (${treeInfo.reason})`
