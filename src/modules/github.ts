@@ -56,5 +56,5 @@ async function expandGithub(client, msg) {
 module.exports = {
   handler: expandGithub,
   help:
-    "If configured for a specific Github repository (via the 'user-repo set option), in this room, will expand #123 into the issue's title and URL.",
+    "If configured for a specific Github repository (via the 'user-repo' set option), in this room, will expand #123 into the issue's title and URL.",
 };
