@@ -1,3 +1,7 @@
+// DB facilities. Don't use these directly, instead go through the Settings
+// module which adds in-memory caching. Only the Settings module should
+// directly interact with this.
+
 import * as sqlite from "sqlite";
 import sqlite3 from "sqlite3";
 import * as path from "path";
@@ -9,6 +13,17 @@ export async function init(storageDir) {
   db = await sqlite.open({ filename: dbPath, driver: sqlite3.Database });
   db.on("trace", (event) => console.log(event));
   await db.migrate();
+}
+
+export async function migrateRoomSettings(
+  prevRoomId: string,
+  newRoomId: string
+) {
+  await db.run(
+    "UPDATE ModuleSetting SET matrixRoomId = ? WHERE matrixRoomId = ?",
+    newRoomId,
+    prevRoomId
+  );
 }
 
 export async function upsertModuleSettingEnabled(roomId, moduleName, enabled) {
@@ -26,7 +41,7 @@ export async function upsertModuleSettingEnabled(roomId, moduleName, enabled) {
     );
   } else {
     await db.run(
-      "UPDATE ModuleSetting SET enabled = ? where id = ?",
+      "UPDATE ModuleSetting SET enabled = ? WHERE id = ?",
       enabled,
       former.id
     );
@@ -50,7 +65,7 @@ export async function upsertModuleSettingOptions(roomId, moduleName, options) {
     );
   } else {
     await db.run(
-      "UPDATE ModuleSetting SET options = ? where id = ?",
+      "UPDATE ModuleSetting SET options = ? WHERE id = ?",
       stringified,
       former.id
     );

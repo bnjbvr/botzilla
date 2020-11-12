@@ -33,6 +33,12 @@ async function forceReloadSettings() {
   }
 }
 
+export async function migrateRoom(fromRoomId, toRoomId) {
+  await db.migrateRoomSettings(fromRoomId, toRoomId);
+  // Update in-memory cache.
+  await forceReloadSettings();
+}
+
 export async function getSettings(): Promise<Settings> {
   if (SETTINGS === null) {
     await forceReloadSettings();

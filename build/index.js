@@ -18,12 +18,16 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const matrix_bot_sdk_1 = require("matrix-bot-sdk");
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const util = __importStar(require("util"));
 const settings = __importStar(require("./settings"));
+const autojoin_upgraded_rooms_1 = __importDefault(require("./autojoin-upgraded-rooms"));
 let fsReadDir = util.promisify(fs.readdir);
 // A place where to store the client, for cleanup purposes.
 let CLIENT = null;
@@ -164,6 +168,7 @@ async function createClient(configFilename) {
     // Now we can create the client and set it up to automatically join rooms.
     const client = new matrix_bot_sdk_1.MatrixClient(config.homeserverUrl, config.accessToken, storage);
     matrix_bot_sdk_1.AutojoinRoomsMixin.setupOnClient(client);
+    autojoin_upgraded_rooms_1.default.setupOnClient(client);
     client.on("room.join", (roomId) => {
         roomJoinedAt[roomId] = Date.now();
         console.log("joined room", roomId, "at", roomJoinedAt[roomId]);

@@ -12,6 +12,7 @@ import * as util from "util";
 
 import * as settings from "./settings";
 import { Message } from "./utils";
+import AutojoinUpgradedRooms from "./autojoin-upgraded-rooms";
 
 let fsReadDir = util.promisify(fs.readdir);
 
@@ -193,6 +194,8 @@ async function createClient(configFilename: string) {
     storage
   );
   AutojoinRoomsMixin.setupOnClient(client);
+
+  AutojoinUpgradedRooms.setupOnClient(client);
 
   client.on("room.join", (roomId: string) => {
     roomJoinedAt[roomId] = Date.now();

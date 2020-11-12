@@ -19,7 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isModuleEnabled = exports.setOption = exports.getOption = exports.enableModule = exports.getSettings = void 0;
+exports.isModuleEnabled = exports.setOption = exports.getOption = exports.enableModule = exports.getSettings = exports.migrateRoom = void 0;
 const db = __importStar(require("./db"));
 const utils_1 = require("./utils");
 let SETTINGS = null;
@@ -40,6 +40,12 @@ async function forceReloadSettings() {
         entry.options = r.options === null ? null : JSON.parse(r.options);
     }
 }
+async function migrateRoom(fromRoomId, toRoomId) {
+    await db.migrateRoomSettings(fromRoomId, toRoomId);
+    // Update in-memory cache.
+    await forceReloadSettings();
+}
+exports.migrateRoom = migrateRoom;
 async function getSettings() {
     if (SETTINGS === null) {
         await forceReloadSettings();
