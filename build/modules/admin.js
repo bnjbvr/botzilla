@@ -1,9 +1,21 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -54,7 +66,7 @@ async function tryList(client, msg, extra) {
 }
 function enabledModulesInRoom(status, roomId) {
     let enabledModules = Object.keys(status[roomId])
-        .map(key => {
+        .map((key) => {
         if (typeof status[roomId] !== "undefined" &&
             typeof status[roomId][key] === "object" &&
             typeof status[roomId][key].enabled !== "undefined") {
@@ -62,7 +74,7 @@ function enabledModulesInRoom(status, roomId) {
         }
         return undefined;
     })
-        .filter(x => x !== undefined);
+        .filter((x) => x !== undefined);
     if (!enabledModules.length) {
         return null;
     }
@@ -196,6 +208,6 @@ async function handler(client, msg, extra) {
 const AdminModule = {
     handler,
     help: `Helps administrator configure the current Botzilla instance.
-    Possible commands are: enable (module)|disable (module)|enable-all (module)|disable-all (module)|list|status|set|get`
+    Possible commands are: enable (module)|disable (module)|enable-all (module)|disable-all (module)|list|status|set|get`,
 };
 module.exports = AdminModule;

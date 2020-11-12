@@ -12,7 +12,7 @@ var KNOWN_FRAMEWORKS = [
     "meteor",
     "vue",
     "mocha",
-    "jest"
+    "jest",
 ];
 var KNOWN_KEYWORDS = [
     "ember.js",
@@ -35,7 +35,7 @@ var KNOWN_KEYWORDS = [
     "webassembly",
     "webasm",
     "ecma262",
-    "ecmascript"
+    "ecmascript",
 ];
 var PRE_LOADED_TWEETS = 10;
 const URL = "http://javascript.horse/random.json";
@@ -118,5 +118,5 @@ module.exports = {
         let tweet = await getTweet();
         client.sendText(msg.room, tweet);
     },
-    help: "Tells a random message from the @horsejs twitter account. UNSAFE!"
+    help: "Tells a random message from the @horsejs twitter account. UNSAFE!",
 };

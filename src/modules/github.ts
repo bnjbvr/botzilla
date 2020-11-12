@@ -12,8 +12,8 @@ async function handleIssueOrPr(client, repo, roomId, issueNumber) {
     headers: {
       accept: "application/vnd.github.v3+json",
       host: "api.github.com",
-      "user-agent": "curl/7.64.0" // oh you
-    }
+      "user-agent": "curl/7.64.0", // oh you
+    },
   });
 
   if (!response) {
@@ -37,7 +37,7 @@ async function handleIssueOrPr(client, repo, roomId, issueNumber) {
     msgtype: "m.notice",
     body: text,
     format: "org.matrix.custom.html",
-    formatted_body: html
+    formatted_body: html,
   });
 }
 
@@ -56,5 +56,5 @@ async function expandGithub(client, msg) {
 module.exports = {
   handler: expandGithub,
   help:
-    "If configured for a specific Github repository (via the 'user-repo set option), in this room, will expand #123 into the issue's title and URL."
+    "If configured for a specific Github repository (via the 'user-repo set option), in this room, will expand #123 into the issue's title and URL.",
 };

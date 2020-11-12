@@ -75,5 +75,5 @@ module.exports = {
             client.sendText(msg.room, `Could not find reviewers for /${path}`);
         }
     },
-    help: "Suggest reviewers for given file in m-c. Usage: Who can review <path>?"
+    help: "Suggest reviewers for given file in m-c. Usage: Who can review <path>?",
 };

@@ -5,7 +5,7 @@ function helper(tag) {
       maybeAttributes =
         " " +
         Object.keys(attributes)
-          .map(key => {
+          .map((key) => {
             return `${key}="${attributes[key]}"`;
           })
           .join(" ");

@@ -15,5 +15,5 @@ module.exports = {
     client.sendText(msg.room, json.joke);
   },
 
-  help: "Reads a joke out loud from icanhazdadjoke.com. UNSAFE!"
+  help: "Reads a joke out loud from icanhazdadjoke.com. UNSAFE!",
 };

@@ -136,7 +136,7 @@ async function handler(client, msg, extra) {
   let done = await sendOneUpdate(repo, {
     path,
     newLine,
-    commitMessage
+    commitMessage,
   });
 
   if (done) {
@@ -158,5 +158,5 @@ module.exports = {
   handler,
   init,
   help:
-    "Notes confessions on the mrgiggles/histoire repository. They'll eventually appear on https://mrgiggles.github.io/histoire."
+    "Notes confessions on the mrgiggles/histoire repository. They'll eventually appear on https://mrgiggles.github.io/histoire.",
 };

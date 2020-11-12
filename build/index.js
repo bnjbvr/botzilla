@@ -1,9 +1,21 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -22,7 +34,7 @@ async function loadConfig(fileName) {
     const handlerNames = [];
     const helpMessages = {};
     let moduleNames = await fsReadDir(path.join(__dirname, "modules"));
-    moduleNames = moduleNames.map(filename => filename.split(".js")[0]);
+    moduleNames = moduleNames.map((filename) => filename.split(".js")[0]);
     for (let moduleName of moduleNames) {
         let mod = require("./" + path.join("modules", moduleName));
         if (mod.init) {
@@ -31,7 +43,7 @@ async function loadConfig(fileName) {
         handlerNames.push(moduleName);
         handlers.push({
             moduleName,
-            handler: mod.handler
+            handler: mod.handler,
         });
         helpMessages[moduleName] = mod.help || "No help for this module.";
     }
@@ -43,8 +55,8 @@ async function loadConfig(fileName) {
             handlerNames,
             helpMessages,
             owner: config.owner,
-            logLevel: config.logLevel || "warn"
-        }
+            logLevel: config.logLevel || "warn",
+        },
     };
 }
 function makeHandleCommand(client, config) {
@@ -98,7 +110,7 @@ function makeHandleCommand(client, config) {
             body,
             sender,
             room,
-            event
+            event,
         };
         for (let { moduleName, handler } of config.handlers) {
             let extra = Object.assign({}, config.extra);
@@ -190,11 +202,11 @@ CONFIG[n] files are config.json files based on config.json.example.
     await createClient(configFilename);
 }
 // No top-level await, alright.
-main().catch(err => {
+main().catch((err) => {
     console.error("Error in main:", err.stack);
 });
 function wait(ms) {
-    return new Promise(ok => {
+    return new Promise((ok) => {
         setTimeout(ok, ms);
     });
 }

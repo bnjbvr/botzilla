@@ -1,5 +1,5 @@
 // Provides random uuids.
-import uuid from "uuid/v4";
+import { v4 as uuid } from "uuid";
 
 module.exports = {
   handler: async function uuidHandler(client, msg) {
@@ -10,5 +10,5 @@ module.exports = {
     client.sendText(msg.room, text);
   },
 
-  help: "Generates a random uuid following uuidv4."
+  help: "Generates a random uuid following uuidv4.",
 };

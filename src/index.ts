@@ -2,9 +2,8 @@ import {
   MatrixClient,
   SimpleFsStorageProvider,
   AutojoinRoomsMixin,
-  RichReply,
   LogService,
-  LogLevel
+  LogLevel,
 } from "matrix-bot-sdk";
 
 import * as fs from "fs";
@@ -26,7 +25,7 @@ interface Handler {
   handler: () => any;
 }
 
-async function loadConfig(fileName) {
+async function loadConfig(fileName: string) {
   let config = JSON.parse(fs.readFileSync(fileName).toString());
 
   const handlers: Handler[] = [];
@@ -34,7 +33,7 @@ async function loadConfig(fileName) {
   const helpMessages = {};
 
   let moduleNames = await fsReadDir(path.join(__dirname, "modules"));
-  moduleNames = moduleNames.map(filename => filename.split(".js")[0]);
+  moduleNames = moduleNames.map((filename) => filename.split(".js")[0]);
 
   for (let moduleName of moduleNames) {
     let mod = require("./" + path.join("modules", moduleName));
@@ -44,7 +43,7 @@ async function loadConfig(fileName) {
     handlerNames.push(moduleName);
     handlers.push({
       moduleName,
-      handler: mod.handler
+      handler: mod.handler,
     });
     helpMessages[moduleName] = mod.help || "No help for this module.";
   }
@@ -57,8 +56,8 @@ async function loadConfig(fileName) {
       handlerNames,
       helpMessages,
       owner: config.owner,
-      logLevel: config.logLevel || "warn"
-    }
+      logLevel: config.logLevel || "warn",
+    },
   };
 }
 
@@ -125,7 +124,7 @@ function makeHandleCommand(client, config) {
       body,
       sender,
       room,
-      event
+      event,
     };
 
     for (let { moduleName, handler } of config.handlers) {
@@ -147,7 +146,7 @@ function makeHandleCommand(client, config) {
   };
 }
 
-async function createClient(configFilename) {
+async function createClient(configFilename: string) {
   const config = await loadConfig(configFilename);
 
   switch (config.extra.logLevel) {
@@ -243,12 +242,12 @@ CONFIG[n] files are config.json files based on config.json.example.
 }
 
 // No top-level await, alright.
-main().catch(err => {
+main().catch((err) => {
   console.error("Error in main:", err.stack);
 });
 
 function wait(ms) {
-  return new Promise(ok => {
+  return new Promise((ok) => {
     setTimeout(ok, ms);
   });
 }

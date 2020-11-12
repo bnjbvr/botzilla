@@ -1,12 +1,13 @@
 import * as sqlite from "sqlite";
+import sqlite3 from "sqlite3";
 import * as path from "path";
 
 let db;
 
 export async function init(storageDir) {
   let dbPath = path.join(storageDir, "db.sqlite");
-  db = await sqlite.open(dbPath, { promise: Promise, verbose: true });
-  db.on("trace", event => console.log(event));
+  db = await sqlite.open({ filename: dbPath, driver: sqlite3.Database });
+  db.on("trace", (event) => console.log(event));
   await db.migrate();
 }
 

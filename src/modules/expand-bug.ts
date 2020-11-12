@@ -68,5 +68,5 @@ async function expandBugNumber(client, msg) {
 module.exports = {
   handler: expandBugNumber,
   help:
-    "Expands bug numbers into (URL, status, assignee, title) when it sees 'bug 123456'."
+    "Expands bug numbers into (URL, status, assignee, title) when it sees 'bug 123456'.",
 };

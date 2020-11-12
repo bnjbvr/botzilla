@@ -38,7 +38,7 @@ async function handler(client, msg) {
     else {
         // Respond with a few interesting trees.
         let answer = ["autoland", "mozilla-inbound", "try"]
-            .map(name => treeMap[name])
+            .map((name) => treeMap[name])
             .map(formatOne)
             .join("\n");
         client.sendText(msg.room, answer);
@@ -46,5 +46,5 @@ async function handler(client, msg) {
 }
 module.exports = {
     handler,
-    help: "Reads the status of all the trees with !treestatus, or of a single one with !treestatus NAME, if it's a well-known tree."
+    help: "Reads the status of all the trees with !treestatus, or of a single one with !treestatus NAME, if it's a well-known tree.",
 };

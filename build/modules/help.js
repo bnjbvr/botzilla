@@ -1,9 +1,21 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -15,9 +27,9 @@ function fullHelp(client, msg, extra) {
     if (extra.handlerNames.length) {
         text += "\nModules enabled:\n\n";
         text += extra.handlerNames
-            .map(name => `- ${name} : ${extra.helpMessages[name]}`)
+            .map((name) => `- ${name} : ${extra.helpMessages[name]}`)
             .join("\n");
-        let handlersHelp = extra.handlerNames.map(name => _.li({}, _.strong({}, name), ":", extra.helpMessages[name]));
+        let handlersHelp = extra.handlerNames.map((name) => _.li({}, _.strong({}, name), ":", extra.helpMessages[name]));
         html += _.p({}, "Modules enabled:", _.ul({}, ...handlersHelp));
     }
     else {
@@ -34,7 +46,7 @@ function fullHelp(client, msg, extra) {
         msgtype: "m.notice",
         body: text,
         format: "org.matrix.custom.html",
-        formatted_body: html
+        formatted_body: html,
     });
 }
 module.exports = {
@@ -61,12 +73,12 @@ module.exports = {
                 msgtype: "m.notice",
                 body: text,
                 format: "org.matrix.custom.html",
-                formatted_body: html
+                formatted_body: html,
             });
         }
         else {
             fullHelp(client, msg, extra);
         }
     },
-    help: "Well, this is what you're looking at :)"
+    help: "Well, this is what you're looking at :)",
 };

@@ -59,12 +59,12 @@ async function toot(client, msg, extra): Promise<boolean> {
 
   const masto = await Masto.login({
     uri: baseUrl,
-    accessToken
+    accessToken,
   });
 
   await masto.createStatus({
     status: content,
-    visibility: "public"
+    visibility: "public",
   });
 
   await utils.sendSeen(client, msg);
@@ -96,7 +96,7 @@ async function twitter(client, msg, extra): Promise<boolean> {
     consumer_key,
     consumer_secret,
     access_token,
-    access_token_secret
+    access_token_secret,
   } = CONFIG_TWITTER[alias];
   if (
     !consumer_key ||
@@ -115,7 +115,7 @@ async function twitter(client, msg, extra): Promise<boolean> {
     consumer_key,
     consumer_secret,
     access_token,
-    access_token_secret
+    access_token_secret,
   });
 
   await T.post("statuses/update", { status: content });
@@ -136,5 +136,5 @@ async function handler(client, msg, extra) {
 module.exports = {
   handler,
   init,
-  help: "Helps posting to Mastodon/Twitter accounts from Matrix"
+  help: "Helps posting to Mastodon/Twitter accounts from Matrix",
 };

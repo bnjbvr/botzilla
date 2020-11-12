@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Cooldown = exports.isAdmin = exports.isSuperAdmin = exports.sendSeen = exports.sendThumbsUp = exports.sendReaction = exports.getRoomAlias = exports.requestJson = exports.request = exports.assert = void 0;
 const util_1 = require("util");
 const request_1 = __importDefault(require("request"));
 function assert(test, msg) {
@@ -16,8 +17,8 @@ async function requestJson(url) {
     let options = {
         uri: url,
         headers: {
-            accept: "application/json"
-        }
+            accept: "application/json",
+        },
     };
     let response = await exports.request(options);
     return JSON.parse(response.body);
@@ -55,8 +56,8 @@ async function sendReaction(client, msg, emoji = "👀") {
         "m.relates_to": {
             rel_type: "m.annotation",
             event_id: msg.event.event_id,
-            key: emoji
-        }
+            key: emoji,
+        },
     };
     let now = (Date.now() / 1000) | 0;
     let transactionId = now + "_botzilla_emoji" + reactionId++;
@@ -96,7 +97,7 @@ class Cooldown {
         if (typeof this.map[key] === "undefined") {
             this.map[key] = {
                 numMessages: 0,
-                timer: null
+                timer: null,
             };
         }
         return this.map[key];

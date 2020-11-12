@@ -4,7 +4,6 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "pretty": "npx prettier \"./src/**/*\" --write",
     "build": "tsc",
     "dev": "tsc -w --incremental --preserveWatchOutput",
@@ -21,14 +20,15 @@
   },
   "homepage": "https://github.com/bnjbvr/botzilla#readme",
   "dependencies": {
-    "masto": "^3.1.1",
-    "matrix-bot-sdk": "^0.5.3",
+    "masto": "^3.6.2",
+    "matrix-bot-sdk": "^0.5.8",
     "octonode": "^0.9.5",
-    "prettier": "1.19.1",
+    "prettier": "2.1.2",
     "request": "^2.88.0",
-    "sqlite": "^3.0.3",
+    "sqlite": "^4.0.15",
+    "sqlite3": "^5.0.0",
     "twit": "^2.2.11",
-    "typescript": "3.8.3",
-    "uuid": "^3.3.3"
+    "typescript": "4.0.5",
+    "uuid": "^8.3.1"
   }
 }

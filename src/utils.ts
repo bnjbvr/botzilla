@@ -33,8 +33,8 @@ export async function requestJson(url) {
   let options = {
     uri: url,
     headers: {
-      accept: "application/json"
-    }
+      accept: "application/json",
+    },
   };
   let response = await request(options);
   return JSON.parse(response.body);
@@ -76,8 +76,8 @@ export async function sendReaction(client: MatrixClient, msg, emoji = "👀") {
     "m.relates_to": {
       rel_type: "m.annotation",
       event_id: msg.event.event_id,
-      key: emoji
-    }
+      key: emoji,
+    },
   };
 
   let now = (Date.now() / 1000) | 0;
@@ -149,7 +149,7 @@ export class Cooldown {
     if (typeof this.map[key] === "undefined") {
       this.map[key] = {
         numMessages: 0,
-        timer: null
+        timer: null,
       };
     }
     return this.map[key];

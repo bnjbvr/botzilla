@@ -12,7 +12,7 @@ var KNOWN_FRAMEWORKS = [
   "meteor",
   "vue",
   "mocha",
-  "jest"
+  "jest",
 ];
 
 var KNOWN_KEYWORDS = [
@@ -36,7 +36,7 @@ var KNOWN_KEYWORDS = [
   "webassembly",
   "webasm",
   "ecma262",
-  "ecmascript"
+  "ecmascript",
 ];
 
 var PRE_LOADED_TWEETS = 10;
@@ -101,7 +101,7 @@ async function onLoad() {
 
 // TODO there should be a way to properly init a submodule. In the meanwhile,
 // just do it in the global scope here.
-(async function() {
+(async function () {
   try {
     await onLoad();
   } catch (err) {
@@ -110,7 +110,7 @@ async function onLoad() {
 })();
 
 module.exports = {
-  handler: async function(client, msg) {
+  handler: async function (client, msg) {
     if (msg.body.indexOf("!horsejs") == -1) {
       return;
     }
@@ -132,5 +132,5 @@ module.exports = {
     client.sendText(msg.room, tweet);
   },
 
-  help: "Tells a random message from the @horsejs twitter account. UNSAFE!"
+  help: "Tells a random message from the @horsejs twitter account. UNSAFE!",
 };

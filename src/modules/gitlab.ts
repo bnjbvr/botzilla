@@ -21,8 +21,8 @@ async function handleIssueOrMr(
     uri: url,
     headers: {
       accept: "application/json",
-      "user-agent": "curl/7.64.0" // oh you
-    }
+      "user-agent": "curl/7.64.0", // oh you
+    },
   });
 
   if (!response) {
@@ -46,7 +46,7 @@ async function handleIssueOrMr(
     msgtype: "m.notice",
     body: text,
     format: "org.matrix.custom.html",
-    formatted_body: html
+    formatted_body: html,
   });
 }
 
@@ -93,5 +93,5 @@ module.exports = {
   help:
     "If configured for a specific Gitlab repository (via the 'url' set " +
     "option), in this room, will expand #123 into the issue's title and URL, " +
-    "!123 into the MR's title and URL."
+    "!123 into the MR's title and URL.",
 };

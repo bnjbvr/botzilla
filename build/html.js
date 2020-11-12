@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.a = exports.strong = exports.li = exports.ul = exports.p = void 0;
 function helper(tag) {
     return (attributes, ...children) => {
         let maybeAttributes = "";
@@ -7,7 +8,7 @@ function helper(tag) {
             maybeAttributes =
                 " " +
                     Object.keys(attributes)
-                        .map(key => {
+                        .map((key) => {
                         return `${key}="${attributes[key]}"`;
                     })
                         .join(" ");

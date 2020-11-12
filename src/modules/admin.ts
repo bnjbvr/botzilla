@@ -57,7 +57,7 @@ async function tryList(client: MatrixClient, msg: utils.Message, extra) {
 
 function enabledModulesInRoom(status, roomId): string | null {
   let enabledModules = Object.keys(status[roomId])
-    .map(key => {
+    .map((key) => {
       if (
         typeof status[roomId] !== "undefined" &&
         typeof status[roomId][key] === "object" &&
@@ -67,7 +67,7 @@ function enabledModulesInRoom(status, roomId): string | null {
       }
       return undefined;
     })
-    .filter(x => x !== undefined);
+    .filter((x) => x !== undefined);
 
   if (!enabledModules.length) {
     return null;
@@ -230,7 +230,7 @@ async function handler(
 const AdminModule: ModuleHandler = {
   handler,
   help: `Helps administrator configure the current Botzilla instance.
-    Possible commands are: enable (module)|disable (module)|enable-all (module)|disable-all (module)|list|status|set|get`
+    Possible commands are: enable (module)|disable (module)|enable-all (module)|disable-all (module)|list|status|set|get`,
 };
 
 module.exports = AdminModule;

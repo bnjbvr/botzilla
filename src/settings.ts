@@ -23,7 +23,7 @@ function ensureCacheEntry(matrixRoomId, moduleName) {
 
 async function forceReloadSettings() {
   SETTINGS = {
-    "*": {}
+    "*": {},
   };
   let results = await db.getModuleSettings();
   for (const r of results) {

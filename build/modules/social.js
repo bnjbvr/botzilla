@@ -1,9 +1,21 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -44,11 +56,11 @@ async function toot(client, msg, extra) {
     }
     const masto = await masto_1.Masto.login({
         uri: baseUrl,
-        accessToken
+        accessToken,
     });
     await masto.createStatus({
         status: content,
-        visibility: "public"
+        visibility: "public",
     });
     await utils.sendSeen(client, msg);
     return true;
@@ -71,7 +83,7 @@ async function twitter(client, msg, extra) {
     if (typeof CONFIG_TWITTER[alias] === "undefined") {
         return true;
     }
-    let { consumer_key, consumer_secret, access_token, access_token_secret } = CONFIG_TWITTER[alias];
+    let { consumer_key, consumer_secret, access_token, access_token_secret, } = CONFIG_TWITTER[alias];
     if (!consumer_key ||
         !consumer_secret ||
         !access_token ||
@@ -85,7 +97,7 @@ async function twitter(client, msg, extra) {
         consumer_key,
         consumer_secret,
         access_token,
-        access_token_secret
+        access_token_secret,
     });
     await T.post("statuses/update", { status: content });
     await utils.sendSeen(client, msg);
@@ -102,5 +114,5 @@ async function handler(client, msg, extra) {
 module.exports = {
     handler,
     init,
-    help: "Helps posting to Mastodon/Twitter accounts from Matrix"
+    help: "Helps posting to Mastodon/Twitter accounts from Matrix",
 };

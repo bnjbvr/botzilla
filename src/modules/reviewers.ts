@@ -60,7 +60,7 @@ async function fuzzyMatch(path) {
 }
 
 module.exports = {
-  handler: async function(client, msg) {
+  handler: async function (client, msg) {
     const m = msg.body.match(MESSAGE_REGEXP);
     if (!m) {
       return;
@@ -90,5 +90,6 @@ module.exports = {
     }
   },
 
-  help: "Suggest reviewers for given file in m-c. Usage: Who can review <path>?"
+  help:
+    "Suggest reviewers for given file in m-c. Usage: Who can review <path>?",
 };
