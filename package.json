@@ -21,14 +21,14 @@
   "homepage": "https://github.com/bnjbvr/botzilla#readme",
   "dependencies": {
     "masto": "^3.7.0",
-    "matrix-bot-sdk": "^0.5.8",
+    "matrix-bot-sdk": "^0.6.2",
     "octonode": "^0.9.5",
     "prettier": "2.1.2",
     "request": "^2.88.0",
     "sqlite": "^4.0.15",
     "sqlite3": "^5.0.3",
     "twit": "^2.2.11",
-    "typescript": "4.0.5",
+    "typescript": "4.8.4",
     "uuid": "^8.3.1"
   }
 }

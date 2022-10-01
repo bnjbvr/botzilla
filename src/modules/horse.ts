@@ -104,7 +104,7 @@ async function onLoad() {
 (async function () {
   try {
     await onLoad();
-  } catch (err) {
+  } catch (err: any) {
     console.error("when initializing horse.js:", err.message, err.stack);
   }
 })();

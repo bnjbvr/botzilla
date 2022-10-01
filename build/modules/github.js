@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -25,12 +29,12 @@ const _ = __importStar(require("../html"));
 const ISSUE_OR_PR_REGEXP = /#(\d+)/g;
 async function handleIssueOrPr(client, repo, roomId, issueNumber) {
     let url = `https://api.github.com/repos/${repo}/issues/${issueNumber}`;
-    let response = await utils_1.request({
+    let response = await (0, utils_1.request)({
         uri: url,
         headers: {
             accept: "application/vnd.github.v3+json",
             host: "api.github.com",
-            "user-agent": "curl/7.64.0",
+            "user-agent": "curl/7.64.0", // oh you
         },
     });
     if (!response) {

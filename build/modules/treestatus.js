@@ -16,7 +16,7 @@ async function handler(client, msg) {
         return;
     }
     let whichTree = match[1]; // first group.
-    let results = (await utils_1.requestJson(URL)).result;
+    let results = (await (0, utils_1.requestJson)(URL)).result;
     let treeMap = {};
     for (let result of results) {
         treeMap[result.tree] = result;

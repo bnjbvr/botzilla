@@ -15,7 +15,7 @@ exports.default = {
                 .splice(1)
                 .join(":");
             const newRoomId = tombstoneEvent["content"]["replacement_room"];
-            await settings_1.migrateRoom(prevRoomId, newRoomId);
+            await (0, settings_1.migrateRoom)(prevRoomId, newRoomId);
             return client.joinRoom(newRoomId, [serverName]);
         });
     },

@@ -59,7 +59,7 @@ async function sendOneUpdate(
 
     await repo.updateContentsAsync(path, commitMessage, content, sha);
     return true;
-  } catch (err) {
+  } catch (err: any) {
     if (err.statusCode && err.statusCode === 404) {
       // Create the file.
       await repo.createContentsAsync(path, commitMessage, newLine);

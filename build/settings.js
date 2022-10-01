@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -24,7 +28,7 @@ const db = __importStar(require("./db"));
 const utils_1 = require("./utils");
 let SETTINGS = null;
 function ensureCacheEntry(matrixRoomId, moduleName) {
-    utils_1.assert(SETTINGS !== null, "settings should have been defined first");
+    (0, utils_1.assert)(SETTINGS !== null, "settings should have been defined first");
     SETTINGS[matrixRoomId] = SETTINGS[matrixRoomId] || {};
     SETTINGS[matrixRoomId][moduleName] = SETTINGS[matrixRoomId][moduleName] || {};
     return SETTINGS[matrixRoomId][moduleName];
@@ -50,7 +54,7 @@ async function getSettings() {
     if (SETTINGS === null) {
         await forceReloadSettings();
     }
-    utils_1.assert(SETTINGS !== null, "settings should have been loaded");
+    (0, utils_1.assert)(SETTINGS !== null, "settings should have been loaded");
     return SETTINGS;
 }
 exports.getSettings = getSettings;

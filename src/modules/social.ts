@@ -125,10 +125,10 @@ async function twitter(client, msg, extra): Promise<boolean> {
 }
 
 async function handler(client, msg, extra) {
-  if (toot(client, msg, extra)) {
+  if (await toot(client, msg, extra)) {
     return;
   }
-  if (twitter(client, msg, extra)) {
+  if (await twitter(client, msg, extra)) {
     return;
   }
 }

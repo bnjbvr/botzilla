@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -28,11 +32,11 @@ async function handleIssueOrMr(client, baseUrl, user, project, roomId, isIssue, 
     let url = isIssue
         ? `https://${baseUrl}/api/v4/projects/${encoded}/issues/${number}`
         : `https://${baseUrl}/api/v4/projects/${encoded}/merge_requests/${number}`;
-    let response = await utils_1.request({
+    let response = await (0, utils_1.request)({
         uri: url,
         headers: {
             accept: "application/json",
-            "user-agent": "curl/7.64.0",
+            "user-agent": "curl/7.64.0", // oh you
         },
     });
     if (!response) {

@@ -58,7 +58,7 @@ async function getTweet() {
     if (TWEETS.length) {
         result = TWEETS.pop();
     }
-    let tweet = (await utils_1.requestJson(URL)).text;
+    let tweet = (await (0, utils_1.requestJson)(URL)).text;
     if (result !== null) {
         maybeCacheTweet(tweet);
         TWEETS.push(tweet);
@@ -66,7 +66,7 @@ async function getTweet() {
     else {
         result = tweet;
     }
-    utils_1.assert(typeof result === "string", "string resolved at this point");
+    (0, utils_1.assert)(typeof result === "string", "string resolved at this point");
     return result;
 }
 async function onLoad() {

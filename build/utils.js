@@ -12,7 +12,7 @@ function assert(test, msg) {
     }
 }
 exports.assert = assert;
-exports.request = util_1.promisify(request_1.default);
+exports.request = (0, util_1.promisify)(request_1.default);
 async function requestJson(url) {
     let options = {
         uri: url,
@@ -20,7 +20,7 @@ async function requestJson(url) {
             accept: "application/json",
         },
     };
-    let response = await exports.request(options);
+    let response = await (0, exports.request)(options);
     return JSON.parse(response.body);
 }
 exports.requestJson = requestJson;

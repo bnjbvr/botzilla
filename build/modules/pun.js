@@ -10,7 +10,7 @@ module.exports = {
         if (msg.body.indexOf("!pun") === -1) {
             return;
         }
-        let json = await utils_1.requestJson(URL);
+        let json = await (0, utils_1.requestJson)(URL);
         client.sendText(msg.room, json.joke);
     },
     help: "Reads a joke out loud from icanhazdadjoke.com. UNSAFE!",

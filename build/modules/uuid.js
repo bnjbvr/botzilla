@@ -7,7 +7,7 @@ module.exports = {
         if (msg.body.indexOf("!uuid") === -1) {
             return;
         }
-        let text = uuid_1.v4();
+        let text = (0, uuid_1.v4)();
         client.sendText(msg.room, text);
     },
     help: "Generates a random uuid following uuidv4.",

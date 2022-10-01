@@ -11,7 +11,7 @@ const REVIEWER_REGEXP = /r=(\S+)/;
 const MAX_REVIEWERS = 3;
 async function getReviewers(path) {
     const url = `${JSON_URL}${path}`;
-    const log = await utils_1.requestJson(url);
+    const log = await (0, utils_1.requestJson)(url);
     const reviewers = {};
     for (const item of log.entries) {
         const m = item.desc.match(REVIEWER_REGEXP);
@@ -37,7 +37,7 @@ async function fuzzyMatch(path) {
     let result;
     try {
         const url = SEARCH_FOX_QUERY.replace("{{FILENAME}}", path);
-        result = await utils_1.requestJson(url);
+        result = await (0, utils_1.requestJson)(url);
     }
     catch (_) {
         // Just try the normal path in case of error.
