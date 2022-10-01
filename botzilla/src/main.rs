@@ -1,7 +1,5 @@
 mod wasm;
 
-use std::{env, sync::Arc};
-
 use anyhow::Context;
 use matrix_sdk::{
     config::SyncSettings,
@@ -16,6 +14,8 @@ use matrix_sdk::{
     },
     Client,
 };
+use notify::{RecursiveMode, Watcher};
+use std::{env, path::PathBuf, sync::Arc};
 use tokio::{
     sync::Mutex,
     time::{sleep, Duration},
@@ -50,14 +50,41 @@ fn get_config() -> anyhow::Result<BotConfig> {
 struct AppCtx {
     client: reqwest::Client,
     modules: WasmModules,
+    modules_path: PathBuf,
+    needs_recompile: bool,
 }
 
 impl AppCtx {
-    pub fn new() -> anyhow::Result<Self> {
+    pub fn new(modules_path: PathBuf) -> anyhow::Result<Self> {
         Ok(Self {
             client: reqwest::Client::default(),
-            modules: WasmModules::new()?,
+            modules: WasmModules::new(&modules_path)?,
+            modules_path,
+            needs_recompile: false,
         })
+    }
+
+    pub async fn set_needs_recompile(ptr: Arc<Mutex<Self>>) {
+        {
+            let need = &mut ptr.lock().await.needs_recompile;
+            if *need {
+                return;
+            }
+            *need = true;
+        }
+
+        tokio::spawn(async move {
+            tokio::time::sleep(Duration::new(1, 0)).await;
+
+            let mut ptr = ptr.lock().await;
+
+            if let Ok(modules) = WasmModules::new(&ptr.modules_path) {
+                ptr.modules = modules;
+                tracing::info!("successful hot reload!");
+            }
+
+            ptr.needs_recompile = false;
+        });
     }
 }
 
@@ -67,10 +94,10 @@ struct App {
 }
 
 impl App {
-    pub fn new() -> anyhow::Result<Self> {
-        Ok(Self {
-            inner: Arc::new(Mutex::new(AppCtx::new()?)),
-        })
+    pub fn new(ctx: AppCtx) -> Self {
+        Self {
+            inner: Arc::new(Mutex::new(ctx)),
+        }
     }
 }
 
@@ -255,8 +282,14 @@ async fn real_main() -> anyhow::Result<()> {
     tracing::debug!("starting initial sync...");
     client.sync_once(SyncSettings::default()).await.unwrap();
 
-    tracing::debug!("initial sync done! now listening to all the messages");
-    client.add_event_handler_context(App::new()?);
+    tracing::debug!("setting up app...");
+    let app_ctx = AppCtx::new("./modules/target/wasm32-unknown-unknown/release/".into())?;
+    let app = App::new(app_ctx);
+
+    let _watcher_guard = watcher(app.inner.clone()).await?;
+
+    tracing::debug!("setup ready! now listening to incoming messages.");
+    client.add_event_handler_context(app);
     client.add_event_handler(on_message);
     client.add_event_handler(on_stripped_state_member);
 
@@ -265,6 +298,52 @@ async fn real_main() -> anyhow::Result<()> {
     client.sync(sync_settings).await?;
 
     Ok(())
+}
+
+async fn watcher(app: Arc<Mutex<AppCtx>>) -> anyhow::Result<notify::RecommendedWatcher> {
+    let modules_path = app.lock().await.modules_path.to_owned();
+    tracing::debug!(
+        "setting up watcher on @ {}...",
+        modules_path.to_string_lossy()
+    );
+
+    let rt_handle = tokio::runtime::Handle::current();
+    let mut watcher =
+        notify::recommended_watcher(move |res: Result<notify::Event, notify::Error>| match res {
+            Ok(event) => {
+                // Only watch wasm files
+                if !event.paths.iter().any(|path| {
+                    if let Some(ext) = path.extension() {
+                        ext == "wasm"
+                    } else {
+                        false
+                    }
+                }) {
+                    return;
+                }
+
+                match event.kind {
+                    notify::EventKind::Create(_)
+                    | notify::EventKind::Modify(_)
+                    | notify::EventKind::Remove(_) => {
+                        // Trigger an update of the modules.
+                        let app = app.clone();
+                        rt_handle.spawn(async move {
+                            AppCtx::set_needs_recompile(app).await;
+                        });
+                    }
+                    notify::EventKind::Access(_)
+                    | notify::EventKind::Any
+                    | notify::EventKind::Other => {}
+                }
+            }
+            Err(e) => tracing::warn!("watch error: {e:?}"),
+        })?;
+
+    watcher.watch(&modules_path, RecursiveMode::Recursive)?;
+
+    tracing::debug!("watcher setup done!");
+    Ok(watcher)
 }
 
 #[tokio::main]

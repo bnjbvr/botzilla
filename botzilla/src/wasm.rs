@@ -1,6 +1,8 @@
 wit_bindgen_host_wasmtime_rust::export!("./wit/imports.wit");
 wit_bindgen_host_wasmtime_rust::import!("./wit/exports.wit");
 
+use std::path::Path;
+
 use imports::*;
 use matrix_sdk::ruma::{RoomId, UserId};
 use wasmtime::AsContextMut;
@@ -65,14 +67,12 @@ pub(crate) struct WasmModules {
 }
 
 impl WasmModules {
-    pub fn new() -> anyhow::Result<Self> {
+    pub fn new(modules_path: &Path) -> anyhow::Result<Self> {
         tracing::debug!("setting up wasm context...");
 
         let engine = wasmtime::Engine::default();
 
         let mut compiled_modules = Vec::new();
-
-        let known_modules = &["./modules/target/wasm32-unknown-unknown/release/uuid.wasm"];
 
         let state = ModuleState::default();
 
@@ -86,11 +86,24 @@ impl WasmModules {
         imports::add_to_linker(&mut linker, |s| &mut s.imports)?;
 
         tracing::debug!("precompiling wasm modules...");
-        for module_path in known_modules {
-            let name = module_path.to_string(); // TODO better name
+        for module_path in std::fs::read_dir(modules_path)? {
+            let module_path = module_path?.path();
 
-            tracing::debug!("compiling wasm module: {name}...");
-            let module = wasmtime::Module::from_file(&engine, module_path)?;
+            if module_path.extension().map_or(true, |ext| ext != "wasm") {
+                continue;
+            }
+
+            let name = module_path
+                .file_stem()
+                .map(|s| s.to_string_lossy())
+                .unwrap_or_else(|| module_path.to_string_lossy())
+                .to_string();
+
+            tracing::debug!(
+                "compiling wasm module: {name} @ {}...",
+                module_path.to_string_lossy()
+            );
+            let module = wasmtime::Module::from_file(&engine, &module_path)?;
 
             tracing::debug!("instantiating wasm module: {name}...");
             let (exports, instance) =
