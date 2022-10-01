@@ -227,9 +227,12 @@ dependencies = [
  "anyhow",
  "dotenvy",
  "matrix-sdk",
+ "reqwest",
+ "serde",
  "tokio",
  "tracing",
  "tracing-subscriber",
+ "uuid 1.1.2",
 ]
 
 [[package]]

@@ -4,10 +4,13 @@ use anyhow::Context;
 use matrix_sdk::{
     config::SyncSettings,
     event_handler::Ctx,
-    room::Room,
-    ruma::events::room::{
-        member::StrippedRoomMemberEvent,
-        message::{MessageType, RoomMessageEventContent, SyncRoomMessageEvent},
+    room::{Joined, Room},
+    ruma::{
+        events::room::{
+            member::StrippedRoomMemberEvent,
+            message::{MessageType, RoomMessageEventContent, SyncRoomMessageEvent},
+        },
+        UserId,
     },
     Client,
 };
@@ -43,7 +46,7 @@ fn get_config() -> anyhow::Result<BotConfig> {
 
 #[derive(Default)]
 struct AppCtx {
-    num_recv: u32,
+    client: reqwest::Client,
 }
 
 #[derive(Clone)]
@@ -57,6 +60,47 @@ impl App {
             inner: Arc::new(Mutex::new(AppCtx::default())),
         }
     }
+}
+
+async fn gen_uuid(msg: &str, _from: &UserId, room: &Joined) -> anyhow::Result<bool> {
+    if !msg.starts_with("!uuid") {
+        return Ok(false);
+    }
+
+    let uuid = uuid::Uuid::new_v4();
+    let text = RoomMessageEventContent::text_plain(format!("{uuid}"));
+
+    room.send(text, None).await?;
+
+    Ok(true)
+}
+
+async fn get_pun(ctx: &AppCtx, msg: &str, _from: &UserId, room: &Joined) -> anyhow::Result<bool> {
+    if !msg.starts_with("!pun") {
+        return Ok(false);
+    }
+
+    const URL: &str = "https://icanhazdadjoke.com/";
+
+    let req = ctx
+        .client
+        .get(URL)
+        .header("Accept", "application/json")
+        .build()?;
+
+    #[derive(serde::Deserialize)]
+    struct Response {
+        joke: String,
+    }
+
+    let response: Response = ctx.client.execute(req).await?.json().await?;
+
+    let joke = response.joke;
+
+    let text = RoomMessageEventContent::text_plain(format!("{joke}"));
+    room.send(text, None).await?;
+
+    Ok(true)
 }
 
 async fn on_message(
@@ -92,18 +136,33 @@ async fn on_message(
             content,
         );
 
-        let num = {
-            let mut ctx = ctx.inner.lock().await;
-            let old = ctx.num_recv;
-            ctx.num_recv += 1;
-            old
-        };
+        match gen_uuid(&content, ev.sender(), &room).await {
+            Ok(res) => {
+                if res {
+                    return Ok(());
+                }
+            }
+            Err(err) => {
+                tracing::warn!("gen_uuid caused an error: {err}");
+            }
+        }
 
-        let text = RoomMessageEventContent::text_plain(format!(
-            "Hello, this is the {num}th message i've seen!"
-        ));
-
-        room.send(text, None).await?;
+        {
+            // TODO ohnoes, locking across other awaits is bad
+            // Might be better that each handler gets its own state and lock instead, to minimize
+            // contention.
+            let ctx = ctx.inner.lock().await;
+            match get_pun(&ctx, &content, ev.sender(), &room).await {
+                Ok(res) => {
+                    if res {
+                        return Ok(());
+                    }
+                }
+                Err(err) => {
+                    tracing::warn!("get_pun caused an error: {err}");
+                }
+            }
+        }
     }
 
     Ok(())
