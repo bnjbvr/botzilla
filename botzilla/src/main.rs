@@ -1,3 +1,5 @@
+mod wasm;
+
 use std::{env, sync::Arc};
 
 use anyhow::Context;
@@ -18,6 +20,7 @@ use tokio::{
     sync::Mutex,
     time::{sleep, Duration},
 };
+use wasm::WasmModules;
 
 struct BotConfig {
     home_server: String,
@@ -44,9 +47,18 @@ fn get_config() -> anyhow::Result<BotConfig> {
     })
 }
 
-#[derive(Default)]
 struct AppCtx {
     client: reqwest::Client,
+    modules: WasmModules,
+}
+
+impl AppCtx {
+    pub fn new() -> anyhow::Result<Self> {
+        Ok(Self {
+            client: reqwest::Client::default(),
+            modules: WasmModules::new()?,
+        })
+    }
 }
 
 #[derive(Clone)]
@@ -55,24 +67,11 @@ struct App {
 }
 
 impl App {
-    pub fn new() -> Self {
-        Self {
-            inner: Arc::new(Mutex::new(AppCtx::default())),
-        }
+    pub fn new() -> anyhow::Result<Self> {
+        Ok(Self {
+            inner: Arc::new(Mutex::new(AppCtx::new()?)),
+        })
     }
-}
-
-async fn gen_uuid(msg: &str, _from: &UserId, room: &Joined) -> anyhow::Result<bool> {
-    if !msg.starts_with("!uuid") {
-        return Ok(false);
-    }
-
-    let uuid = uuid::Uuid::new_v4();
-    let text = RoomMessageEventContent::text_plain(format!("{uuid}"));
-
-    room.send(text, None).await?;
-
-    Ok(true)
 }
 
 async fn get_pun(ctx: &AppCtx, msg: &str, _from: &UserId, room: &Joined) -> anyhow::Result<bool> {
@@ -136,22 +135,36 @@ async fn on_message(
             content,
         );
 
-        match gen_uuid(&content, ev.sender(), &room).await {
-            Ok(res) => {
-                if res {
-                    return Ok(());
+        // TODO ohnoes, locking across other awaits is bad
+        // Might be better that each handler gets its own state and lock instead, to minimize
+        // contention.
+        let mut ctx = ctx.inner.lock().await;
+
+        let (store, modules) = ctx.modules.iter();
+        for module in modules {
+            tracing::trace!("handling messages with {}...", module.name());
+            match module.handle(&mut *store, &content, ev.sender(), &room.room_id()) {
+                Ok(msgs) => {
+                    let stop = !msgs.is_empty();
+                    for msg in msgs {
+                        let text = RoomMessageEventContent::text_plain(msg.content);
+                        // TODO take msg.to into consideration, don't always answer the whole room
+                        room.send(text, None).await?;
+                    }
+                    // TODO support handling the same message with several handlers.
+                    if stop {
+                        tracing::trace!("{} successfully handled the message!", module.name());
+                        return Ok(());
+                    }
                 }
-            }
-            Err(err) => {
-                tracing::warn!("gen_uuid caused an error: {err}");
+
+                Err(err) => {
+                    tracing::warn!("wasm module {} caused an error: {err}", module.name());
+                }
             }
         }
 
         {
-            // TODO ohnoes, locking across other awaits is bad
-            // Might be better that each handler gets its own state and lock instead, to minimize
-            // contention.
-            let ctx = ctx.inner.lock().await;
             match get_pun(&ctx, &content, ev.sender(), &room).await {
                 Ok(res) => {
                     if res {
@@ -243,7 +256,7 @@ async fn real_main() -> anyhow::Result<()> {
     client.sync_once(SyncSettings::default()).await.unwrap();
 
     tracing::debug!("initial sync done! now listening to all the messages");
-    client.add_event_handler_context(App::new());
+    client.add_event_handler_context(App::new()?);
     client.add_event_handler(on_message);
     client.add_event_handler(on_stripped_state_member);
 

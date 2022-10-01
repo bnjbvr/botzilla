@@ -1,0 +1,118 @@
+wit_bindgen_host_wasmtime_rust::export!("./wit/imports.wit");
+wit_bindgen_host_wasmtime_rust::import!("./wit/exports.wit");
+
+use imports::*;
+use matrix_sdk::ruma::{RoomId, UserId};
+use wasmtime::AsContextMut;
+
+#[derive(Default)]
+pub struct MyImports;
+
+impl Imports for MyImports {
+    fn rand_u64(&mut self) -> u64 {
+        rand::random()
+    }
+
+    fn trace(&mut self, msg: &str) {
+        tracing::trace!(msg);
+    }
+
+    fn debug(&mut self, msg: &str) {
+        tracing::debug!(msg);
+    }
+}
+
+#[derive(Default)]
+pub(crate) struct ModuleState {
+    imports: MyImports,
+    exports: exports::ExportsData,
+}
+
+pub(crate) struct Module {
+    name: String,
+    exports: exports::Exports<ModuleState>,
+    _instance: wasmtime::Instance,
+}
+
+impl Module {
+    pub fn name(&self) -> &str {
+        self.name.as_str()
+    }
+
+    pub fn handle(
+        &self,
+        store: impl AsContextMut<Data = ModuleState>,
+        content: &str,
+        sender: &UserId,
+        room: &RoomId,
+    ) -> anyhow::Result<Vec<exports::Message>> {
+        let msgs = self.exports.on_msg(
+            store,
+            content,
+            sender.as_str(),
+            "author name NYI",
+            room.as_str(),
+        )?;
+        Ok(msgs)
+    }
+}
+
+pub(crate) type WasmStore = wasmtime::Store<ModuleState>;
+
+pub(crate) struct WasmModules {
+    store: WasmStore,
+    modules: Vec<Module>,
+}
+
+impl WasmModules {
+    pub fn new() -> anyhow::Result<Self> {
+        tracing::debug!("setting up wasm context...");
+
+        let engine = wasmtime::Engine::default();
+
+        let mut compiled_modules = Vec::new();
+
+        let known_modules = &["./modules/target/wasm32-unknown-unknown/release/uuid.wasm"];
+
+        let state = ModuleState::default();
+
+        // A `Store` is what will own instances, functions, globals, etc. All wasm
+        // items are stored within a `Store`, and it's what we'll always be using to
+        // interact with the wasm world. Custom data can be stored in stores but for
+        // now we just use `()`.
+        let mut store = wasmtime::Store::new(&engine, state);
+
+        let mut linker = wasmtime::Linker::<ModuleState>::new(&engine);
+        imports::add_to_linker(&mut linker, |s| &mut s.imports)?;
+
+        tracing::debug!("precompiling wasm modules...");
+        for module_path in known_modules {
+            let name = module_path.to_string(); // TODO better name
+
+            tracing::debug!("compiling wasm module: {name}...");
+            let module = wasmtime::Module::from_file(&engine, module_path)?;
+
+            tracing::debug!("instantiating wasm module: {name}...");
+            let (exports, instance) =
+                exports::Exports::instantiate(&mut store, &module, &mut linker, |s| {
+                    &mut s.exports
+                })?;
+
+            tracing::debug!("great success!");
+            compiled_modules.push(Module {
+                name,
+                exports,
+                _instance: instance,
+            });
+        }
+
+        Ok(Self {
+            store,
+            modules: compiled_modules,
+        })
+    }
+
+    pub(crate) fn iter(&mut self) -> (&mut WasmStore, impl Iterator<Item = &Module>) {
+        (&mut self.store, self.modules.iter())
+    }
+}
