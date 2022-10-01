@@ -8,25 +8,27 @@ use matrix_sdk::ruma::{RoomId, UserId};
 use wasmtime::AsContextMut;
 
 #[derive(Default)]
-pub struct MyImports;
+pub struct ModuleImports {
+    module_name: String,
+}
 
-impl Imports for MyImports {
+impl Imports for ModuleImports {
     fn rand_u64(&mut self) -> u64 {
         rand::random()
     }
 
     fn trace(&mut self, msg: &str) {
-        tracing::trace!(msg);
+        tracing::trace!("{} - {msg}", self.module_name);
     }
 
     fn debug(&mut self, msg: &str) {
-        tracing::debug!(msg);
+        tracing::debug!("{} - {msg}", self.module_name);
     }
 }
 
 #[derive(Default)]
 pub(crate) struct ModuleState {
-    imports: MyImports,
+    imports: Vec<ModuleImports>,
     exports: exports::ExportsData,
 }
 
@@ -82,9 +84,6 @@ impl WasmModules {
         // now we just use `()`.
         let mut store = wasmtime::Store::new(&engine, state);
 
-        let mut linker = wasmtime::Linker::<ModuleState>::new(&engine);
-        imports::add_to_linker(&mut linker, |s| &mut s.imports)?;
-
         tracing::debug!("precompiling wasm modules...");
         for module_path in std::fs::read_dir(modules_path)? {
             let module_path = module_path?.path();
@@ -98,6 +97,16 @@ impl WasmModules {
                 .map(|s| s.to_string_lossy())
                 .unwrap_or_else(|| module_path.to_string_lossy())
                 .to_string();
+
+            let module_state = ModuleImports {
+                module_name: name.clone(),
+            };
+
+            let entry = store.data_mut().imports.len();
+            store.data_mut().imports.push(module_state);
+
+            let mut linker = wasmtime::Linker::<ModuleState>::new(&engine);
+            imports::add_to_linker(&mut linker, move |s| &mut s.imports[entry])?;
 
             tracing::debug!(
                 "compiling wasm module: {name} @ {}...",
