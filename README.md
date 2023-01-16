@@ -1,6 +1,8 @@
 Botzilla
 ===
 
+**⚠⚠⚠ This project has been deprecated in favor of [Trinity](https://github.com/bnjbvr/trinity), a more advanced bot system written in Rust and making use of commands implemented as WebAssembly modules. No more issues or pull requests will be taken against this repository.**
+
 This is a Matrix bot, with a few features, tuned for Mozilla's needs but could
 be useful in other contexts.
 
